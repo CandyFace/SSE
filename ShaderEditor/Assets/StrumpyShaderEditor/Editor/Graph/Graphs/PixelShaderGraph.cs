@@ -120,12 +120,21 @@ namespace StrumpyShaderEditor
 				{
 					shaderBody += "o.Normal = " + MasterNode.GetNormalExpression () + ";\n";
 				}
-				shaderBody += MasterNode.EmissionConnected () ? "o.Emission = " + MasterNode.GetEmissionExpression () + ";\n" : "";
-				shaderBody += MasterNode.SpecularConnected () ? "o.Specular = " + MasterNode.GetSpecularExpression () + ";\n" : "";
-				shaderBody += MasterNode.GlossConnected () ? "o.Gloss = " + MasterNode.GetGlossExpression () + ";\n" : "";
-				shaderBody += MasterNode.CustomConnected () ? "o.Custom = " + MasterNode.GetCustomExpression () + ";\n" : "";
-				
-				if( MasterNode.AlphaConnected () )
+                shaderBody += MasterNode.EmissionConnected() ? "o.Emission = " + MasterNode.GetEmissionExpression() + ";\n" : "";
+
+                switch (ShaderWorkflow)
+                {
+                    case ShaderWorkflow.Metallic:
+                        shaderBody += MasterNode.MetallicConnected() ? "o.Metallic = " + MasterNode.GetMetallicExpression() + ";\n" : "";
+                        break;
+                    case ShaderWorkflow.Specular:
+                        shaderBody += MasterNode.SpecularConnected() ? "o.Specular = " + MasterNode.GetSpecularExpression() + ";\n" : "";
+                        break;
+                }
+                shaderBody += MasterNode.SmoothnessConnected() ? "o.Smoothness = " + MasterNode.GetSmoothnessExpression() + ";\n" : "";
+                shaderBody += MasterNode.OcclusionConnected() ? "o.Occlusion = " + MasterNode.GetOcclusionExpression() + ";\n" : "";
+
+                if ( MasterNode.AlphaConnected () )
 				{
 					shaderBody += "o.Alpha = " + MasterNode.GetAlphaExpression () + ";\n";
 				}

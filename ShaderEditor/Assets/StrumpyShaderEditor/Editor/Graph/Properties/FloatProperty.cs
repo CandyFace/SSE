@@ -29,8 +29,7 @@ namespace StrumpyShaderEditor
 		public override void Draw()
 		{
 			GUILayout.BeginVertical();
-			GUILayout.Label( "Value:" );
-			_value = EditorGUILayout.FloatField( _value );
+			_value = EditorGUILayout.FloatField("Value", _value );
 			GUILayout.EndVertical();
 		}
 		

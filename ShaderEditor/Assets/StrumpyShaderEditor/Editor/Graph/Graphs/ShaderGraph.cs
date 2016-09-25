@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,8 +114,12 @@ namespace StrumpyShaderEditor
 		{
 			shaderSettings.Draw();
 		}
-		
-		public void DrawInput()
+        public ShaderWorkflow ShaderWorkflow
+        {
+            get { return shaderSettings.ShaderWorkflow; }
+        }
+
+        public void DrawInput()
 		{
 			shaderInputs.Draw();
 		}
@@ -318,7 +322,8 @@ namespace StrumpyShaderEditor
 			shaderTemplate = shaderTemplate.Replace ("${Options}", shaderSettings.Options);
 			shaderTemplate = shaderTemplate.Replace ("${SurfaceFlags}", shaderSettings.SurfaceFlags );
 			shaderTemplate = shaderTemplate.Replace ("${ShaderPragma}", shaderSettings.Pragma);
-			shaderTemplate = shaderTemplate.Replace ("${LightingFunctionPrePass}", simpleLightingGraph.LightingFunctionBody );
+            shaderTemplate = shaderTemplate.Replace ("${SurfaceOutput}", shaderSettings.SurfaceOutput);
+            shaderTemplate = shaderTemplate.Replace ("${LightingFunctionPrePass}", simpleLightingGraph.LightingFunctionBody );
 			shaderTemplate = shaderTemplate.Replace ("${StructInputs}", pixelGraph.StructInput);
 			
 			shaderTemplate = shaderTemplate.Replace ("${VertexShader}", vertexGraph.ShaderBody );

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System;
@@ -113,11 +113,11 @@ namespace StrumpyShaderEditor
 					}
 				}
 			}
-			
-			//Finally load the last graph
-			LoadLastGraph();
-			_selectedGraph.Initialize( new Rect( 0,0, Screen.width, Screen.height ), true );
-			_undoChain = new GraphHistory( _serializableTypes );
+
+            //Finally load the last graph
+            LoadLastGraph();
+            _selectedGraph.Initialize(new Rect(0, 0, Screen.width, Screen.height), true);
+            _undoChain = new GraphHistory( _serializableTypes );
 			
 			_shouldOpenPreviewWindow = true;
 		}
@@ -233,7 +233,7 @@ namespace StrumpyShaderEditor
 					
 					
 					_graphNeedsUpdate = false;
-					InstructionCounter.CountInstructions(); // Update the instruction count
+					InstructionCounter.CountInstructions(_tempShaderPathFull); // Update the instruction count
 					CacheCount(); // Solve the tooltip (Cached)
 				}
 				else
@@ -348,7 +348,7 @@ namespace StrumpyShaderEditor
 						AssetDatabase.Refresh(); // Investigate if this is optimal
 					}
 					
-					InstructionCounter.CountInstructions(); // Update the instruction count
+					InstructionCounter.CountInstructions(_tempShaderPathFull); // Update the instruction count
 					CacheCount(); // Solve the tooltip (Cached)
 				}
 				else
@@ -398,32 +398,33 @@ namespace StrumpyShaderEditor
 		private void LoadLastGraph()
 		{
 			var fi = new FileInfo(_autosavePath);
-			if (fi.Exists)
-			{
-				try{
-					var fs = fi.OpenRead();
-					var reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
-					var ser = new DataContractSerializer(typeof(AutoSaveGraph), _serializableTypes, int.MaxValue, false, false, null);
-					var loaded = ser.ReadObject(reader, true) as AutoSaveGraph;
-					if (loaded != null)
-					{
-						_nextGraph = loaded.Graph;
-						if( !string.IsNullOrEmpty( loaded.ExportPath ) && File.Exists( loaded.ExportPath ) )
-							_lastExportPath = loaded.ExportPath;
-						if( !string.IsNullOrEmpty( loaded.SavePath ) && File.Exists( loaded.SavePath ) )
-							_lastGraphPath = loaded.SavePath;
-						_nextGraph.Initialize( new Rect( 0, 0, Screen.width, Screen.height ), true);
-						_markDirtyOnLoad = true;
-					}
-					reader.Close();
-					fs.Close();
-				}
-				catch( Exception e )
-				{
-					Debug.Log( e );
-					EditorUtility.DisplayDialog("Load Shader Error", "Could not load shader", "Ok");
-				}
-			}
+            if (fi.Exists)
+            {
+                try
+                {
+                    var fs = fi.OpenRead();
+                    var reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
+                    var ser = new DataContractSerializer(typeof(AutoSaveGraph), _serializableTypes, int.MaxValue, false, false, null);
+                    var loaded = ser.ReadObject(reader, true) as AutoSaveGraph;
+                    if (loaded != null)
+                    {
+                        _nextGraph = loaded.Graph;
+                        if (!string.IsNullOrEmpty(loaded.ExportPath) && File.Exists(loaded.ExportPath))
+                            _lastExportPath = loaded.ExportPath;
+                        if (!string.IsNullOrEmpty(loaded.SavePath) && File.Exists(loaded.SavePath))
+                            _lastGraphPath = loaded.SavePath;
+                        _nextGraph.Initialize(new Rect(0, 0, Screen.width, Screen.height), true);
+                        _markDirtyOnLoad = true;
+                    }
+                    reader.Close();
+                    fs.Close();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                    EditorUtility.DisplayDialog("Load Shader Error", "Could not load shader", "Ok");
+                }
+            }
 		}
 		
 		//Build a list of how many instructions the last compiled shader uses.

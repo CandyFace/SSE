@@ -12,7 +12,8 @@ namespace StrumpyShaderEditor
 	{
 		[DataMember] private EditorString _shaderName;
 		[DataMember] private EditorString _shaderFallback;
-		[DataMember] private ShaderTarget _shaderTarget;
+        [DataMember] private ShaderWorkflow _shaderWorkflow;
+        [DataMember] private ShaderTarget _shaderTarget;
 		[DataMember] private CullMode _cullMode;
 		[DataMember] private ZWrite _zWrite;
 		[DataMember] private EditorBool _addShadow;
@@ -114,13 +115,17 @@ namespace StrumpyShaderEditor
 		{
 			get{ return _shaderFallback.Value.RemoveWhiteSpace(); }
 		}
-		
-		public ShaderTarget ShaderTarget
-		{
-			get{ return _shaderTarget; }
-		}
-		
-		public CullMode CullMode
+
+        public ShaderTarget ShaderTarget
+        {
+            get { return _shaderTarget; }
+        }
+        public ShaderWorkflow ShaderWorkflow
+        {
+            get { return _shaderWorkflow; }
+        }
+
+        public CullMode CullMode
 		{
 			get{ return _cullMode; }
 		}
@@ -400,8 +405,16 @@ namespace StrumpyShaderEditor
 				return "#pragma target " + ShaderTarget.TargetString();
 			}
 		}
-		
-		private bool _showQueueSettings = false;
+
+        public string SurfaceOutput
+        {
+            get
+            {
+                return ShaderWorkflow.WorkflowString();
+            }
+        }
+
+        private bool _showQueueSettings = false;
 		private bool _showCullingAndDepthSettings = false;
 		private bool _showBlending = false;
 		private bool _showColorAndLighting = false;
@@ -428,11 +441,14 @@ namespace StrumpyShaderEditor
 					"Fallback shader to use in case this shader can not be used.");
 			
 			_shaderFallback.Value = EditorGUILayout.TextField( shaderFallbackContent, _shaderFallback.Value );
-			
-			var targetContent = new GUIContent("Shader Model","Requires more recent hardware to use the shader, but allows for more instructions, texture reads, and more input information.");
+
+            var workflowContent = new GUIContent("Shader Workflow", "Metallic or Specular Workflow");
+            _shaderWorkflow = (ShaderWorkflow)EditorGUILayout.EnumPopup(workflowContent, _shaderWorkflow);
+
+            var targetContent = new GUIContent("Shader Model","Requires more recent hardware to use the shader, but allows for more instructions, texture reads, and more input information.");
 			_shaderTarget = (ShaderTarget)EditorGUILayout.EnumPopup( targetContent, _shaderTarget );
-			
-			var excludePathContent = new GUIContent("Exclude Path","Exclude a renderpath from shader generation");
+
+            var excludePathContent = new GUIContent("Exclude Path","Exclude a renderpath from shader generation");
 			_excludePath = (ExcludePath)EditorGUILayout.EnumPopup( excludePathContent, _excludePath );
 			
 			GUILayout.Space(8);
