@@ -673,10 +673,5 @@ namespace StrumpyShaderEditor
 				return GetConnectedNodesDepthFirst ().Any (x => x.RequiresSceneDepth);
 			}
 		}
-        public ShaderWorkflow ShaderWorkflow
-        {
-            get { return _owner.ShaderWorkflow; }
-        }
-
-    }
+	}
 }

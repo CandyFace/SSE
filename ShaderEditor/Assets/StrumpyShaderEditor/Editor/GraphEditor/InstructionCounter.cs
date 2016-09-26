@@ -30,17 +30,17 @@ namespace StrumpyShaderEditor {
 		public static ProgramCount lastCount = new ProgramCount(new InstructionCount(-1,-1,-1),new InstructionCount(-1,-1,-1));
 		
 		//[MenuItem("File/Count Instructions")]
-		public static void CountInstructions(string fn = null) {
+		public static void CountInstructions() {
 			string assetsDir = Application.dataPath;
 			string tempDir = Path.Combine(Path.GetDirectoryName(assetsDir),"Temp");
 			
 			const string fileName = "CgBatchOutput.shader";
-
-            string filePath = String.IsNullOrEmpty(fn) ? Path.Combine(tempDir, fileName) : fn;
-
-            //Debug.Log(filePath);
-
-            int GL_ALU = -1;
+			
+			string filePath = Path.Combine(tempDir,fileName);
+			
+			//Debug.Log(filePath);
+			
+			int GL_ALU = -1;
 			int GL_V_ALU = -1;
 			int GL_TEX = -1;
 			

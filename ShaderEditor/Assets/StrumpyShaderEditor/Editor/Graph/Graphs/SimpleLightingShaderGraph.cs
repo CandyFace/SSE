@@ -69,20 +69,14 @@ namespace StrumpyShaderEditor
 				}
 				else
 				{
-                    //var lightingFunction = "";
-                    //lightingFunction += "half3 spec = light.a * s.Specular;\n";
-                    //lightingFunction += "half4 c;\n";
-                    //lightingFunction += "c.rgb = (s.Albedo * light.rgb + light.rgb * spec) * s.Alpha;\n";
-                    //lightingFunction += "c.a = s.Alpha;\n";
-                    //lightingFunction += "return c;\n";
-                    //return lightingFunction;
-                    var lightingFunction = "";
-                    lightingFunction += "half4 c;\n";
-                    lightingFunction += "c.rgb = (s.Albedo.rgb * light.rgb) * s.Alpha;\n";
-                    lightingFunction += "c.a = s.Alpha;\n";
-                    lightingFunction += "return c;\n";
-                    return lightingFunction;
-                }
+					var lightingFunction = "";
+					lightingFunction += "half3 spec = light.a * s.Gloss;\n";
+					lightingFunction += "half4 c;\n";
+					lightingFunction += "c.rgb = (s.Albedo * light.rgb + light.rgb * spec) * s.Alpha;\n";
+					lightingFunction += "c.a = s.Alpha;\n";
+					lightingFunction += "return c;\n";
+					return lightingFunction;
+				}
 			}
 		}
 	}
