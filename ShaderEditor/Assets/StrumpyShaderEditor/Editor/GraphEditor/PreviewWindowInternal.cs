@@ -212,6 +212,7 @@ namespace StrumpyShaderEditor
             }
 
             GUILayout.FlexibleSpace();
+            _previewMesh = (Mesh)EditorGUILayout.ObjectField("Mesh:", _previewMesh, typeof(Mesh), true);
 
             GUILayout.BeginHorizontal();
             _drawBackground = EditorExtensions.ToggleButton(_drawBackground, "Draw Background");
