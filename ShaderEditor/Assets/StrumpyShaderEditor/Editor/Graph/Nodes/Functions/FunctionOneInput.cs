@@ -9,15 +9,25 @@ namespace StrumpyShaderEditor
 		[DataMember] protected Float4OutputChannel _result;
 		[DataMember] protected Float4InputChannel _arg1;
 
-		protected FunctionOneInput()
+        string resultDisplayName = "Result";
+        string arg1DisplayName = "Arg1";
+
+        protected FunctionOneInput()
+        {
+            Initialize();
+        }
+
+        protected FunctionOneInput(string resultDisplayName, string arg1DisplayName)
+        {
+            this.resultDisplayName = resultDisplayName;
+            this.arg1DisplayName = arg1DisplayName;
+            Initialize();
+        }
+
+        public override sealed void Initialize ()
 		{
-			Initialize();
-		}
-		
-		public override sealed void Initialize ()
-		{
-			_result = _result ?? new Float4OutputChannel( 0, "Result" );
-			_arg1 = _arg1 ?? new Float4InputChannel( 0, "Arg1", Vector4.zero );
+			_result = _result ?? new Float4OutputChannel( 0, resultDisplayName);
+			_arg1 = _arg1 ?? new Float4InputChannel( 0, arg1DisplayName, Vector4.zero );
 		}
 		
 		public abstract string FunctionName
