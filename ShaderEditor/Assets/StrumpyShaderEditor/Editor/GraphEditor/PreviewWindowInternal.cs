@@ -71,7 +71,7 @@ namespace StrumpyShaderEditor
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             _previewMesh = go.GetComponent<MeshFilter>().sharedMesh;
-          //  GameObject.DestroyImmediate(go);
+            GameObject.DestroyImmediate(go);
 
             _initialized = true;
             UpdatePreviewTexture();
@@ -212,7 +212,7 @@ namespace StrumpyShaderEditor
             }
 
             GUILayout.FlexibleSpace();
-            _previewMesh = (Mesh)EditorGUILayout.ObjectField("Mesh:", _previewMesh, typeof(Mesh));
+            _previewMesh = (Mesh)EditorGUILayout.ObjectField("Mesh:", _previewMesh, typeof(Mesh), true);
 
             GUILayout.BeginHorizontal();
             _drawBackground = EditorExtensions.ToggleButton(_drawBackground, "Draw Background");
