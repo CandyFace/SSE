@@ -47,7 +47,6 @@ ${VertexShaderMods}
 			}
 			
 			void surf (Input IN, inout SurfaceOutput${ShaderType} o) {
-				o.Smoothness = 0.5;
 ${SurfaceShader}
 			}
 		ENDCG

@@ -29,7 +29,7 @@ Fog{
 
 		CGPROGRAM
 #pragma surface surf Standard  vertex:vert
-#pragma target 3.0
+#pragma target 2.0
 
 
 sampler2D _BaseTex;
@@ -73,7 +73,6 @@ float4 VertexOutputMaster0_3_NoInput = float4(0,0,0,0);
 			}
 			
 			void surf (Input IN, inout SurfaceOutputStandard o) {
-				o.Smoothness = 0.5;
 float4 Sampled2D0=tex2D(_BaseTex,IN.uv_BaseTex.xy);
 float4 Sampled2D2=tex2D(_NormalTex,IN.uv_NormalTex.xy);
 float4 Sampled2D1=tex2D(_MaskTex,IN.uv_MaskTex.xy);

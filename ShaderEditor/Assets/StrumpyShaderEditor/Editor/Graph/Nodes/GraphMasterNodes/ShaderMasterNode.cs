@@ -62,7 +62,6 @@ namespace StrumpyShaderEditor
             res.Add(_normal);
             res.Add(_emission);
             res.Add(_alpha);
-            res.Add(_clip);
 
             switch (Owner.ShaderSettings.ShaderType)
             {
@@ -71,6 +70,7 @@ namespace StrumpyShaderEditor
                     res.Add(_specular);
                     res.Add(_gloss);
                     res.Add(_custom);
+                    res.Add(_clip);
                     break;
                 case ShaderType.PBR:
                     res.Add(_metallic);
