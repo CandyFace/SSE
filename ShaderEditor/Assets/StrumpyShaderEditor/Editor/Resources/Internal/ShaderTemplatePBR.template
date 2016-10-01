@@ -1,0 +1,56 @@
+﻿Shader "${ShaderName}"
+{
+	Properties 
+	{
+${ShaderProperties}
+	}
+	
+	SubShader 
+	{
+		Tags
+		{
+${Tags}
+		}
+${GrabPass}
+		
+${Options}
+
+		CGPROGRAM
+#pragma surface surf ${ShaderType} ${SurfaceFlags}
+${ShaderPragma}
+
+
+${ShaderVariableNames}
+			
+			inline half4 LightingBlinnPhongEditor_PrePass (SurfaceOutput${ShaderType} s, half4 light)
+			{
+${LightingFunctionPrePass}
+			}
+
+			inline half4 LightingBlinnPhongEditor (SurfaceOutput${ShaderType} s, half3 lightDir, half atten)
+			{
+				half NdotL = dot (s.Normal, lightDir);
+				half4 c;
+				c.rgb = s.Albedo * _LightColor0.rgb * (NdotL * atten);
+				c.a = s.Alpha;
+				return LightingBlinnPhongEditor_PrePass( s, c );
+			}
+			
+			struct Input {
+				${StructInputs}
+			};
+
+			void vert (inout appdata_full v, out Input o) {
+				UNITY_INITIALIZE_OUTPUT(Input,o)
+${VertexShader}
+${VertexShaderMods}
+			}
+			
+			void surf (Input IN, inout SurfaceOutput${ShaderType} o) {
+				o.Smoothness = 0.5;
+${SurfaceShader}
+			}
+		ENDCG
+	}
+	Fallback "${Fallback}"
+}

@@ -13,14 +13,14 @@ namespace StrumpyShaderEditor
 	public class PixelShaderGraph : SubGraph
 	{
 		private const string GraphName = "Pixel";
-		
-		public PixelShaderGraph ()
-		{
-			AddNode (new ShaderMasterNode ());
-			MarkDirty();
-		}
-		
-		public override string GraphTypeName { 
+
+        public PixelShaderGraph()
+        {
+            AddNode(new ShaderMasterNode());
+            MarkDirty();
+        }
+
+        public override string GraphTypeName { 
 			get{ return GraphName; }
 		}
 		
@@ -32,7 +32,7 @@ namespace StrumpyShaderEditor
 			get {
 				var master = Nodes.FirstOrDefault (x => x is RootNode) as RootNode;
 				if (master == null) {
-					Debug.LogError ("No master shader node in graph");
+					Debug.LogError ("No root shader node in graph");
 				}
 				return master;
 			}
@@ -48,10 +48,10 @@ namespace StrumpyShaderEditor
 			}
 		}
 		
-		/*
+        /*
 		 * Get the struct input for this shader graph... that is the 
 		 * fields that effect the stuct that are required in the .shader file*/
-		public string StructInput
+        public string StructInput
 		{
 			get{
 				var structInput = "";
@@ -124,8 +124,11 @@ namespace StrumpyShaderEditor
 				shaderBody += MasterNode.SpecularConnected () ? "o.Specular = " + MasterNode.GetSpecularExpression () + ";\n" : "";
 				shaderBody += MasterNode.GlossConnected () ? "o.Gloss = " + MasterNode.GetGlossExpression () + ";\n" : "";
 				shaderBody += MasterNode.CustomConnected () ? "o.Custom = " + MasterNode.GetCustomExpression () + ";\n" : "";
-				
-				if( MasterNode.AlphaConnected () )
+                shaderBody += MasterNode.MetallicConnected() ? "o.Metallic = " + MasterNode.GetMetallicExpression() + ";\n" : "";
+                shaderBody += MasterNode.SmoothnessConnected() ? "o.Smoothness = " + MasterNode.GetSmoothnessExpression() + ";\n" : "";
+                shaderBody += MasterNode.OcclusionConnected() ? "o.Occlusion = " + MasterNode.GetOcclusionExpression() + ";\n" : "";
+
+                if ( MasterNode.AlphaConnected () )
 				{
 					shaderBody += "o.Alpha = " + MasterNode.GetAlphaExpression () + ";\n";
 				}
@@ -133,6 +136,5 @@ namespace StrumpyShaderEditor
 				return shaderBody;
 			}
 		}
-		
-	}
+    }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,8 @@ namespace StrumpyShaderEditor
 		[DataMember] private EditorString _shaderName;
 		[DataMember] private EditorString _shaderFallback;
 		[DataMember] private ShaderTarget _shaderTarget;
-		[DataMember] private CullMode _cullMode;
+        [DataMember] private ShaderType _shaderType;
+        [DataMember] private CullMode _cullMode;
 		[DataMember] private ZWrite _zWrite;
 		[DataMember] private EditorBool _addShadow;
 		[DataMember] private ZTest _zTest;
@@ -23,9 +25,10 @@ namespace StrumpyShaderEditor
 		
 		[DataMember] private EditorBool _enableLOD;
 		[DataMember] private EditorInt _lod;
-		
-		//3.2 variables
-		[DataMember] private ExcludePath _excludePath;
+
+
+        //3.2 variables
+        [DataMember] private ExcludePath _excludePath;
 		[DataMember] private EditorBool _dualForward;
 		[DataMember] private EditorBool _fullForwardShadows;
 		[DataMember] private EditorBool _softVegetation;
@@ -56,8 +59,10 @@ namespace StrumpyShaderEditor
 		[DataMember] private EditorFloat _fogDensity;
 		[DataMember] private EditorFloat _fogNearLinear;
 		[DataMember] private EditorFloat _fogFarLinear;
-		
-		public void Initialize()
+
+        public Action OnChangeShaderType;
+
+        public void Initialize()
 		{
 			_shaderName = _shaderName ?? "";
 			_shaderFallback = _shaderFallback ?? "Diffuse";
@@ -114,13 +119,17 @@ namespace StrumpyShaderEditor
 		{
 			get{ return _shaderFallback.Value.RemoveWhiteSpace(); }
 		}
-		
-		public ShaderTarget ShaderTarget
-		{
-			get{ return _shaderTarget; }
-		}
-		
-		public CullMode CullMode
+
+        public ShaderTarget ShaderTarget
+        {
+            get { return _shaderTarget; }
+        }
+        public ShaderType ShaderType
+        {
+            get { return _shaderType; }
+        }
+        
+        public CullMode CullMode
 		{
 			get{ return _cullMode; }
 		}
@@ -434,8 +443,15 @@ namespace StrumpyShaderEditor
 			
 			var excludePathContent = new GUIContent("Exclude Path","Exclude a renderpath from shader generation");
 			_excludePath = (ExcludePath)EditorGUILayout.EnumPopup( excludePathContent, _excludePath );
-			
-			GUILayout.Space(8);
+
+#if UNITY_5_3_OR_NEWER
+            var shaderTypeContent = new GUIContent("Shader Type", "You can select Physically Based Rendering after Unity 5.3");
+            var currentshaderType = _shaderType;
+            _shaderType = (ShaderType)EditorGUILayout.EnumPopup(shaderTypeContent, currentshaderType);
+            if ( (currentshaderType != _shaderType ) && (OnChangeShaderType != null) ) OnChangeShaderType();
+#endif
+
+            GUILayout.Space(8);
 			_showQueueSettings = EditorGUILayout.Foldout( _showQueueSettings, "Queue Settings" );
 			if( _showQueueSettings )
 			{

@@ -20,27 +20,33 @@ namespace StrumpyShaderEditor
 		[DataMember] private Float4InputChannel _custom;
 		
 		[DataMember] private Float4InputChannel _clip;
-		
-		public ShaderMasterNode( )
+
+        [DataMember] private Float4InputChannel _metallic;
+        [DataMember] private Float4InputChannel _smoothness;
+        [DataMember] private Float4InputChannel _occlusion;
+
+        public ShaderMasterNode( )
 		{
-			Initialize(); 
+            Initialize(); 
 		}
-		
-		public override sealed void Initialize ()
+
+        public override sealed void Initialize ()
 		{
 			
 			_albedo = _albedo ?? new Float4InputChannel( 0, "Diffuse", Vector4.zero );
 			_normal = _normal ?? new Float4InputChannel( 1, "Normal", new Vector4( 0.0f, 0.0f, 1.0f, 1.0f ) );
 			_emission = _emission ?? new Float4InputChannel( 2, "Emission", Vector4.zero );
-			_specular = _specular ?? new Float4InputChannel( 3, "Specular", Vector4.zero );
-			_gloss = _gloss ?? new Float4InputChannel( 4, "Gloss", Vector4.zero );
-			_alpha = _alpha ?? new Float4InputChannel( 5, "Alpha", Vector4.one );
-			_clip = _clip ?? new Float4InputChannel( 6, "Clip", Vector4.one );
-			_custom = _custom ?? new Float4InputChannel( 7, "Custom", Vector4.zero );
-			
-			_specular.DisplayName = "Gloss";
-			_gloss.DisplayName = "Specular";
-			_albedo.DisplayName = "Diffuse";
+            _specular = _specular ?? new Float4InputChannel(3, "Specular", Vector4.zero);
+
+            _metallic = _metallic ?? new Float4InputChannel(4, "Metallic", Vector4.zero);
+            _smoothness = _smoothness ?? new Float4InputChannel(5, "Smoothness", Vector4.zero);
+            _occlusion = _occlusion ?? new Float4InputChannel(6, "Occlusion", Vector4.one);
+
+            _gloss = _gloss ?? new Float4InputChannel( 7, "Gloss", Vector4.zero );
+			_alpha = _alpha ?? new Float4InputChannel( 8, "Alpha", Vector4.one );
+
+			_clip = _clip ?? new Float4InputChannel( 20, "Clip", Vector4.one );
+			_custom = _custom ?? new Float4InputChannel( 30, "Custom", Vector4.zero );
 		}
 
 		protected override IEnumerable<OutputChannel> GetOutputChannels()
@@ -50,7 +56,37 @@ namespace StrumpyShaderEditor
 		
 		public override IEnumerable<InputChannel> GetInputChannels()
 		{
-			return new List<InputChannel> {_albedo, _normal, _emission, _specular, _gloss, _alpha, _custom, _clip };
+            var res = new List<InputChannel>(16);
+            
+            res.Add(_albedo);
+            res.Add(_normal);
+            res.Add(_emission);
+            res.Add(_alpha);
+            res.Add(_clip);
+
+            switch (Owner.ShaderSettings.ShaderType)
+            {
+                default:
+                case ShaderType.Standard:
+                    res.Add(_specular);
+                    res.Add(_gloss);
+                    res.Add(_custom);
+                    break;
+                case ShaderType.PBR:
+                    res.Add(_metallic);
+                    res.Add(_smoothness);
+                    res.Add(_occlusion);
+                    break;
+                case ShaderType.PBR_Specular:
+                    res.Add(_specular);
+                    res.Add(_smoothness);
+                    res.Add(_occlusion);
+                    break;
+            }
+
+            res.Sort((a, b) => a.ChannelId.CompareTo(b.ChannelId));
+
+            return res;
 		}
 		
 		public override string NodeTypeName
@@ -74,21 +110,37 @@ namespace StrumpyShaderEditor
 			var alphaInput = _alpha.ChannelInput( this );
 			var customInput = _custom.ChannelInput( this );
 			var clipInput = _clip.ChannelInput( this );
-			
-			var result = albedoInput.AdditionalFields;
+            var metallicInput = _metallic.ChannelInput(this);
+            var smoothnessInput = _smoothness.ChannelInput(this);
+            var occlusionInput = _occlusion.ChannelInput(this);
+
+            var result = albedoInput.AdditionalFields;
 			result += normalInput.AdditionalFields;
 			result += emissionInput.AdditionalFields;
 			result += specularInput.AdditionalFields;
 			result += glossInput.AdditionalFields;
 			result += alphaInput.AdditionalFields;
 			result += customInput.AdditionalFields;
-			result += clipInput.AdditionalFields;
-			return result;
+            result += clipInput.AdditionalFields;
+            result += metallicInput.AdditionalFields;
+            result += smoothnessInput.AdditionalFields;
+            result += occlusionInput.AdditionalFields;
+
+            return result;
 		}
+
+        bool hasIncomingConnection(InputChannel channel)
+        {
+            if (GetInputChannels().Any(i => i == channel))
+            {
+                return channel.IncomingConnection != null;
+            }
+            return false;
+        }
 		
 		public bool AlbedoConnected()
 		{
-			return _albedo.IncomingConnection != null;
+            return hasIncomingConnection(_albedo);
 		}
 		public string GetAlbedoExpression()
 		{
@@ -97,7 +149,7 @@ namespace StrumpyShaderEditor
 		
 		public bool NormalConnected()
 		{
-			return _normal.IncomingConnection != null;
+            return hasIncomingConnection(_normal);
 		}
 		public string GetNormalExpression()
 		{
@@ -106,7 +158,7 @@ namespace StrumpyShaderEditor
 		
 		public bool EmissionConnected()
 		{
-			return _emission.IncomingConnection != null;
+            return hasIncomingConnection(_emission);
 		}
 		public string GetEmissionExpression()
 		{
@@ -115,7 +167,7 @@ namespace StrumpyShaderEditor
 		
 		public bool SpecularConnected()
 		{
-			return _specular.IncomingConnection != null;
+            return hasIncomingConnection(_specular);
 		}
 		public string GetSpecularExpression()
 		{
@@ -124,7 +176,7 @@ namespace StrumpyShaderEditor
 		
 		public bool GlossConnected()
 		{
-			return _gloss.IncomingConnection != null;
+            return hasIncomingConnection(_gloss);
 		}
 		public string GetGlossExpression()
 		{
@@ -133,7 +185,7 @@ namespace StrumpyShaderEditor
 		
 		public bool AlphaConnected()
 		{
-			return _alpha.IncomingConnection != null;
+            return hasIncomingConnection(_alpha);
 		}
 		public string GetAlphaExpression()
 		{
@@ -142,7 +194,7 @@ namespace StrumpyShaderEditor
 		
 		public bool CustomConnected()
 		{
-			return _custom.IncomingConnection != null;
+            return hasIncomingConnection(_custom);
 		}
 		public string GetCustomExpression()
 		{
@@ -151,11 +203,37 @@ namespace StrumpyShaderEditor
 
 		public bool ClipConnected()
 		{
-			return _clip.IncomingConnection != null;
+            return hasIncomingConnection(_clip);
 		}
 		public string GetClipExpression()
 		{
 			return _clip.ChannelInput( this ).QueryResult;
 		}
-	}
+
+        public bool MetallicConnected()
+        {
+            return hasIncomingConnection(_metallic);
+        }
+        public string GetMetallicExpression()
+        {
+            return _metallic.ChannelInput(this).QueryResult;
+        }
+        public bool SmoothnessConnected()
+        {
+            return hasIncomingConnection(_smoothness);
+        }
+        public string GetSmoothnessExpression()
+        {
+            return _smoothness.ChannelInput(this).QueryResult;
+        }
+        public bool OcclusionConnected()
+        {
+            return hasIncomingConnection(_occlusion);
+        }
+        public string GetOcclusionExpression()
+        {
+            return _occlusion.ChannelInput(this).QueryResult;
+        }
+
+    }
 }

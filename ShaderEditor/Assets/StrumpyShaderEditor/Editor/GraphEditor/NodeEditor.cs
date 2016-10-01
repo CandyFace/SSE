@@ -26,7 +26,29 @@ namespace StrumpyShaderEditor
 		private readonly string _internalTempDir;
 		private readonly string _internalTempUnityPath;
 		private readonly string _tempShaderPathFull;
-		private readonly string _shaderTemplatePath;
+		private string _shaderTemplatePath
+        {
+            get
+            {
+                var path = _shaderEditorResourceDir + "Internal" + Path.DirectorySeparatorChar;
+                switch (CurrentGraph.ShaderSettings.ShaderType)
+                {
+                    default:
+                    case ShaderType.Standard:
+                        path += "ShaderTemplate.template";
+                        break;
+#if UNITY_5_3_OR_NEWER
+                    case ShaderType.PBR:
+                        path += "ShaderTemplatePBR.template";
+                        break;
+                    case ShaderType.PBR_Specular:
+                        path += "ShaderTemplatePBR.template";
+                        break;
+#endif
+                }
+                return path;
+            }
+        }
 		private readonly string _graphsDir;
 
 		private readonly PopupMenu _popupMenu;
@@ -65,10 +87,6 @@ namespace StrumpyShaderEditor
 			_tempShaderPathFull = _shaderEditorResourceDir
 								+ _internalTempDir
 								+ TempShaderName + ".shader";
-			_shaderTemplatePath = _shaderEditorResourceDir
-								+ "Internal"
-								+ Path.DirectorySeparatorChar
-								+ "ShaderTemplate.template";
 			_graphsDir = _shaderEditorResourceDir
 								+ "Public"
 								+ Path.DirectorySeparatorChar

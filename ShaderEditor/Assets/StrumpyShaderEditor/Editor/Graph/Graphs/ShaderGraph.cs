@@ -58,14 +58,14 @@ namespace StrumpyShaderEditor
 			
 			shaderInputs.Initialize();
 			shaderSettings.Initialize();
-			pixelGraph.Initialize(this, screenDimension, updateDrawPos);
-			vertexGraph.Initialize(this, screenDimension, updateDrawPos);
+            pixelGraph.Initialize(this, screenDimension, updateDrawPos);
+            vertexGraph.Initialize(this, screenDimension, updateDrawPos);
 			simpleLightingGraph.Initialize(this, screenDimension, updateDrawPos);
-			
-			MarkDirty();
+
+            MarkDirty();
 		}
-		
-		public IEnumerable<ShaderProperty> FindValidProperties( InputType type )
+
+        public IEnumerable<ShaderProperty> FindValidProperties( InputType type )
 		{
 			return shaderInputs.FindValidProperties( type );
 		}
@@ -119,8 +119,13 @@ namespace StrumpyShaderEditor
 		{
 			shaderInputs.Draw();
 		}
-		
-		public Node FirstSelected
+
+        public ShaderSettings ShaderSettings
+        {
+            get { return shaderSettings; }
+        }
+
+        public Node FirstSelected
 		{
 			get{ return CurrentSubGraph.FirstSelected; }
 		}
@@ -290,8 +295,9 @@ namespace StrumpyShaderEditor
 			
 			shaderTemplate = shaderTemplate.Replace ("${ShaderName}", isPreviewShader ? "ShaderEditor/EditorShaderCache" : shaderSettings.ShaderName );
 			shaderTemplate = shaderTemplate.Replace ("${Fallback}", shaderSettings.FallBack );
-			
-			var properties = "";
+            shaderTemplate = shaderTemplate.Replace ("${ShaderType}", shaderSettings.ShaderType.TypeString());
+
+            var properties = "";
 			var shaderVariableNames = "";
 			
 			properties += shaderInputs.GetInputProperties();
@@ -319,9 +325,9 @@ namespace StrumpyShaderEditor
 			shaderTemplate = shaderTemplate.Replace ("${SurfaceFlags}", shaderSettings.SurfaceFlags );
 			shaderTemplate = shaderTemplate.Replace ("${ShaderPragma}", shaderSettings.Pragma);
 			shaderTemplate = shaderTemplate.Replace ("${LightingFunctionPrePass}", simpleLightingGraph.LightingFunctionBody );
-			shaderTemplate = shaderTemplate.Replace ("${StructInputs}", pixelGraph.StructInput);
-			
-			shaderTemplate = shaderTemplate.Replace ("${VertexShader}", vertexGraph.ShaderBody );
+            shaderTemplate = shaderTemplate.Replace ("${StructInputs}", pixelGraph.StructInput);
+
+            shaderTemplate = shaderTemplate.Replace ("${VertexShader}", vertexGraph.ShaderBody );
 			shaderTemplate = shaderTemplate.Replace ("${VertexShaderMods}", pixelGraph.VertexShaderMods);
 			
 			shaderTemplate = shaderTemplate.Replace ("${SurfaceShader}", pixelGraph.ShaderBody );

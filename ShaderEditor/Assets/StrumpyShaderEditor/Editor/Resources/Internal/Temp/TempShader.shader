@@ -2,8 +2,9 @@ Shader "ShaderEditor/EditorShaderCache"
 {
 	Properties 
 	{
-_Tex("_Tex", 2D) = "black" {}
-_Cube("_Cube", Cube) = "black" {}
+_BaseTex("_BaseTex", 2D) = "black" {}
+_MaskTex("_MaskTex", 2D) = "black" {}
+_NormalTex("_NormalTex", 2D) = "black" {}
 
 	}
 	
@@ -27,52 +28,37 @@ Fog{
 
 
 		CGPROGRAM
-#pragma surface surf BlinnPhongEditor  vertex:vert
-#pragma target 2.0
+#pragma surface surf Standard  vertex:vert
+#pragma target 3.0
 
 
-sampler2D _Tex;
-samplerCUBE _Cube;
+sampler2D _BaseTex;
+sampler2D _MaskTex;
+sampler2D _NormalTex;
 
-			struct EditorSurfaceOutput {
-				half3 Albedo;
-				half3 Normal;
-				half3 Emission;
-				half3 Gloss;
-				half Specular;
-				half Alpha;
-				half4 Custom;
-			};
 			
-			inline half4 LightingBlinnPhongEditor_PrePass (EditorSurfaceOutput s, half4 light)
+			inline half4 LightingBlinnPhongEditor_PrePass (SurfaceOutputStandard s, half4 light)
 			{
-half3 spec = light.a * s.Gloss;
 half4 c;
-c.rgb = (s.Albedo * light.rgb + light.rgb * spec) * s.Alpha;
+c.rgb = (s.Albedo.rgb * light.rgb) * s.Alpha;
 c.a = s.Alpha;
 return c;
 
 			}
 
-			inline half4 LightingBlinnPhongEditor (EditorSurfaceOutput s, half3 lightDir, half3 viewDir, half atten)
+			inline half4 LightingBlinnPhongEditor (SurfaceOutputStandard s, half3 lightDir, half atten)
 			{
-				half3 h = normalize (lightDir + viewDir);
-				
-				half diff = max (0, dot ( lightDir, s.Normal ));
-				
-				float nh = max (0, dot (s.Normal, h));
-				float spec = pow (nh, s.Specular*128.0);
-				
-				half4 res;
-				res.rgb = _LightColor0.rgb * diff;
-				res.w = spec * Luminance (_LightColor0.rgb);
-				res *= atten * 2.0;
-
-				return LightingBlinnPhongEditor_PrePass( s, res );
+				half NdotL = dot (s.Normal, lightDir);
+				half4 c;
+				c.rgb = s.Albedo * _LightColor0.rgb * (NdotL * atten);
+				c.a = s.Alpha;
+				return LightingBlinnPhongEditor_PrePass( s, c );
 			}
 			
 			struct Input {
-				float2 uv_Tex;
+				float2 uv_BaseTex;
+float2 uv_NormalTex;
+float2 uv_MaskTex;
 
 			};
 
@@ -86,27 +72,24 @@ float4 VertexOutputMaster0_3_NoInput = float4(0,0,0,0);
 
 			}
 			
-
-			void surf (Input IN, inout EditorSurfaceOutput o) {
-				o.Normal = float3(0.0,0.0,1.0);
-				o.Alpha = 1.0;
-				o.Albedo = 0.0;
-				o.Emission = 0.0;
-				o.Gloss = 0.0;
-				o.Specular = 0.0;
-				o.Custom = 0.0;
-				
-float4 Sampled2D0=tex2D(_Tex,IN.uv_Tex.xy);
-float4 Master0_1_NoInput = float4(0,0,1,1);
+			void surf (Input IN, inout SurfaceOutputStandard o) {
+				o.Smoothness = 0.5;
+float4 Sampled2D0=tex2D(_BaseTex,IN.uv_BaseTex.xy);
+float4 Sampled2D2=tex2D(_NormalTex,IN.uv_NormalTex.xy);
+float4 Sampled2D1=tex2D(_MaskTex,IN.uv_MaskTex.xy);
+float4 Split0=Sampled2D1;
 float4 Master0_2_NoInput = float4(0,0,0,0);
 float4 Master0_3_NoInput = float4(0,0,0,0);
-float4 Master0_4_NoInput = float4(0,0,0,0);
-float4 Master0_5_NoInput = float4(1,1,1,1);
 float4 Master0_7_NoInput = float4(0,0,0,0);
+float4 Master0_8_NoInput = float4(1,1,1,1);
+float4 Master0_30_NoInput = float4(0,0,0,0);
+float4 Master0_20_NoInput = float4(1,1,1,1);
+float4 Master0_4_NoInput = float4(0,0,0,0);
 float4 Master0_6_NoInput = float4(1,1,1,1);
 o.Albedo = Sampled2D0;
+o.Normal = Sampled2D2;
+o.Smoothness = float4( Split0.x, Split0.x, Split0.x, Split0.x);
 
-				o.Normal = normalize(o.Normal);
 			}
 		ENDCG
 	}

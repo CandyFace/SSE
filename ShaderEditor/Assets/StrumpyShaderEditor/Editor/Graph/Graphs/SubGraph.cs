@@ -77,6 +77,10 @@ namespace StrumpyShaderEditor
 		public IEnumerable<Node> Nodes {
 			get { return _nodes.Values; }
 		}
+        public ShaderSettings ShaderSettings
+        {
+            get { return _owner.ShaderSettings; }
+        }
 
 		public void Initialize ( ShaderGraph owner, Rect screenDimensions, bool updateDrawPos )
 		{
