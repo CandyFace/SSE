@@ -2,10 +2,8 @@ Shader "ShaderEditor/EditorShaderCache"
 {
 	Properties 
 	{
-_lightColor("_lightColor", Color) = (0,0,0,1)
-_emmis("_emmis", Color) = (0.7686567,0.7686567,0.7686567,1)
-_offset1("_offset1", Range(0,1) ) = 1
-_color("_color", Color) = (0,0,0,1)
+_Tex("_Tex", 2D) = "black" {}
+_Cube("_Cube", Cube) = "black" {}
 
 	}
 	
@@ -15,7 +13,7 @@ _color("_color", Color) = (0,0,0,1)
 		{
 "Queue"="Geometry"
 "IgnoreProjector"="False"
-"RenderType"="Transparent"
+"RenderType"="Opaque"
 
 		}
 
@@ -33,10 +31,8 @@ Fog{
 #pragma target 2.0
 
 
-float4 _lightColor;
-float4 _emmis;
-float _offset1;
-float4 _color;
+sampler2D _Tex;
+samplerCUBE _Cube;
 
 			struct EditorSurfaceOutput {
 				half3 Albedo;
@@ -50,7 +46,11 @@ float4 _color;
 			
 			inline half4 LightingBlinnPhongEditor_PrePass (EditorSurfaceOutput s, half4 light)
 			{
-return _lightColor;
+half3 spec = light.a * s.Gloss;
+half4 c;
+c.rgb = (s.Albedo * light.rgb + light.rgb * spec) * s.Alpha;
+c.a = s.Alpha;
+return c;
 
 			}
 
@@ -72,7 +72,7 @@ return _lightColor;
 			}
 			
 			struct Input {
-				float4 screenPos;
+				float2 uv_Tex;
 
 			};
 
@@ -96,19 +96,15 @@ float4 VertexOutputMaster0_3_NoInput = float4(0,0,0,0);
 				o.Specular = 0.0;
 				o.Custom = 0.0;
 				
-float4 Add0=((IN.screenPos.xy/IN.screenPos.w).xyxy) + float4( -0.5,-0.5,-0.5,-0.5 );
-float4 Abs0=abs(Add0);
-float4 Multiply1=float4( 3.1415926535, 3.1415926535, 3.1415926535, 3.1415926535 ) * Abs0;
-float4 Sin0=sin(Multiply1);
-float4 Invert0= float4(1.0, 1.0, 1.0, 1.0) - Sin0;
+float4 Sampled2D0=tex2D(_Tex,IN.uv_Tex.xy);
 float4 Master0_1_NoInput = float4(0,0,1,1);
+float4 Master0_2_NoInput = float4(0,0,0,0);
 float4 Master0_3_NoInput = float4(0,0,0,0);
 float4 Master0_4_NoInput = float4(0,0,0,0);
 float4 Master0_5_NoInput = float4(1,1,1,1);
 float4 Master0_7_NoInput = float4(0,0,0,0);
 float4 Master0_6_NoInput = float4(1,1,1,1);
-o.Albedo = _color;
-o.Emission = Invert0;
+o.Albedo = Sampled2D0;
 
 				o.Normal = normalize(o.Normal);
 			}
