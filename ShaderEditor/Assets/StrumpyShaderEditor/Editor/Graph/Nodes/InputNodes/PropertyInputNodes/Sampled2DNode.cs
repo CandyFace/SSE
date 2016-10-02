@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using UnityEditor;
+using System;
 
 namespace StrumpyShaderEditor
 {
@@ -9,9 +11,15 @@ namespace StrumpyShaderEditor
 		private const string NodeName = "Sampled2D";
 		
 		[DataMember] private Float4OutputChannel _rgba;
-		[DataMember] private Float4OutputChannel _a;
-		
-		public Sampled2DNode()
+        [DataMember] private Float4OutputChannel _r;
+        [DataMember] private Float4OutputChannel _g;
+        [DataMember] private Float4OutputChannel _b;
+        [DataMember] private Float4OutputChannel _a;
+
+        [DataMember] private EditorBool _split;
+
+
+        public Sampled2DNode()
 		{
 			Initialize();
 		}
@@ -20,10 +28,13 @@ namespace StrumpyShaderEditor
 		{
 			base.Initialize();
 			_rgba = _rgba ?? new Float4OutputChannel( 0, "RGBA" );
-			_a = _a ?? new Float4OutputChannel( 1, "A" );
-		}
+            _r = _r ?? new Float4OutputChannel(1, "R");
+            _g = _g ?? new Float4OutputChannel(2, "G");
+            _b = _b ?? new Float4OutputChannel(3, "B");
+            _a = _a ?? new Float4OutputChannel(4, "A");
+        }
 
-		protected override ShaderProperty NewPropertyInstance ()
+        protected override ShaderProperty NewPropertyInstance ()
 		{
 			return new Texture2DProperty();
 		}
@@ -44,8 +55,17 @@ namespace StrumpyShaderEditor
 			}
 			return property;
 		}
-		
-		protected override bool OldPropertyConfigured()
+        public override void DrawProperties()
+        {
+            _split = EditorGUILayout.Toggle("Split", _split);
+
+            if (ReferencedProperty() != null)
+            {
+            }
+            base.DrawProperties();
+        }
+
+        protected override bool OldPropertyConfigured()
 		{
 			return _inputName != null && _defaultTexture != null;
 		}
@@ -69,7 +89,14 @@ namespace StrumpyShaderEditor
 
 		protected override IEnumerable<OutputChannel> GetOutputChannels()
 		{
-			var ret = new List<OutputChannel> {_rgba, _a};
+            var ret = new List<OutputChannel> { _rgba };
+            if (_split)
+            {
+                ret.Add(_r);
+                ret.Add(_g);
+                ret.Add(_b);
+                ret.Add(_a);
+            }
 			return ret;
 		}
 		
@@ -86,13 +113,17 @@ namespace StrumpyShaderEditor
 		public override string GetExpression( uint channelId )
 		{
 			AssertOutputChannelExists( channelId );
-			
-			if( channelId == 0 )
-			{
-				return UniqueNodeIdentifier;
-			}
-			return UniqueNodeIdentifier + ".aaaa";
-		}
+
+            switch (channelId)
+            {
+                default:
+                case 0: return UniqueNodeIdentifier;
+                case 1: return String.Format("float4({0}.r,0,0,0)", UniqueNodeIdentifier);
+                case 2: return String.Format("float4(0,{0}.g,0,0)", UniqueNodeIdentifier);
+                case 3: return String.Format("float4(0,0,{0}.b,0)", UniqueNodeIdentifier);
+                case 4: return String.Format("float4(0,0,0,{0}.a)", UniqueNodeIdentifier);
+            }
+        }
 		
 		public string GetAdditionalFields()
 		{
