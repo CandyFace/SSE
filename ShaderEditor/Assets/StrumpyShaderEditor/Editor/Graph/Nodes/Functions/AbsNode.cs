@@ -16,6 +16,11 @@ namespace StrumpyShaderEditor
 		{
 			get{ return "abs"; }
 		}
-		
-	}
+
+        protected override void OnInitialized()
+        {
+            _arg1.DisplayName = "Value";
+            base.OnInitialized();
+        }
+    }
 }
