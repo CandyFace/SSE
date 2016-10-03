@@ -32,61 +32,41 @@ namespace StrumpyShaderEditor
 
         public override sealed void Initialize ()
 		{
-			
-			_albedo = _albedo ?? new Float4InputChannel( 0, "Diffuse", Vector4.zero );
-			_normal = _normal ?? new Float4InputChannel( 1, "Normal", new Vector4( 0.0f, 0.0f, 1.0f, 1.0f ) );
-			_emission = _emission ?? new Float4InputChannel( 2, "Emission", Vector4.zero );
+
+            _albedo = _albedo ?? new Float4InputChannel(0, "Diffuse", Vector4.zero);
+            _normal = _normal ?? new Float4InputChannel(1, "Normal", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+            _emission = _emission ?? new Float4InputChannel(2, "Emission", Vector4.zero);
             _specular = _specular ?? new Float4InputChannel(3, "Specular", Vector4.zero);
+            _gloss = _gloss ?? new Float4InputChannel(4, "Gloss", Vector4.zero);
+            _alpha = _alpha ?? new Float4InputChannel(5, "Alpha", Vector4.one);
+            _clip = _clip ?? new Float4InputChannel(6, "Clip", Vector4.one);
+            _custom = _custom ?? new Float4InputChannel(7, "Custom", Vector4.zero);
+            _metallic = _metallic ?? new Float4InputChannel(8, "Metallic", Vector4.zero);
+            _smoothness = _smoothness ?? new Float4InputChannel(9, "Smoothness", Vector4.zero);
+            _occlusion = _occlusion ?? new Float4InputChannel(10, "Occlusion", Vector4.one);
 
-            _metallic = _metallic ?? new Float4InputChannel(4, "Metallic", Vector4.zero);
-            _smoothness = _smoothness ?? new Float4InputChannel(5, "Smoothness", Vector4.zero);
-            _occlusion = _occlusion ?? new Float4InputChannel(6, "Occlusion", Vector4.one);
+        }
 
-            _gloss = _gloss ?? new Float4InputChannel( 7, "Gloss", Vector4.zero );
-			_alpha = _alpha ?? new Float4InputChannel( 8, "Alpha", Vector4.one );
-
-			_clip = _clip ?? new Float4InputChannel( 20, "Clip", Vector4.one );
-			_custom = _custom ?? new Float4InputChannel( 30, "Custom", Vector4.zero );
-		}
-
-		protected override IEnumerable<OutputChannel> GetOutputChannels()
+        protected override IEnumerable<OutputChannel> GetOutputChannels()
 		{
 			return new List<OutputChannel>();
 		}
 		
 		public override IEnumerable<InputChannel> GetInputChannels()
 		{
-            var res = new List<InputChannel>(16);
-            
-            res.Add(_albedo);
-            res.Add(_normal);
-            res.Add(_emission);
-            res.Add(_alpha);
-
             switch (Owner.ShaderSettings.ShaderType)
             {
                 default:
                 case ShaderType.Standard:
-                    res.Add(_specular);
-                    res.Add(_gloss);
-                    res.Add(_custom);
-                    res.Add(_clip);
-                    break;
+                    _specular.DisplayName = "Gloss";
+                    _gloss.DisplayName = "Specular";
+                    _albedo.DisplayName = "Diffuse";
+                    return new List<InputChannel> { _albedo, _normal, _emission, _specular, _gloss, _alpha, _custom, _clip };
                 case ShaderType.PBR:
-                    res.Add(_metallic);
-                    res.Add(_smoothness);
-                    res.Add(_occlusion);
-                    break;
+                    return new List<InputChannel> { _albedo, _normal, _emission, _metallic, _smoothness, _occlusion, _alpha };
                 case ShaderType.PBR_Specular:
-                    res.Add(_specular);
-                    res.Add(_smoothness);
-                    res.Add(_occlusion);
-                    break;
+                    return new List<InputChannel> { _albedo, _normal, _emission, _specular, _smoothness, _occlusion, _alpha };
             }
-
-            res.Sort((a, b) => a.ChannelId.CompareTo(b.ChannelId));
-
-            return res;
 		}
 		
 		public override string NodeTypeName

@@ -28,10 +28,10 @@ namespace StrumpyShaderEditor
 		{
 			base.Initialize();
 			_rgba = _rgba ?? new Float4OutputChannel( 0, "RGBA" );
-            _r = _r ?? new Float4OutputChannel(1, "R");
-            _g = _g ?? new Float4OutputChannel(2, "G");
-            _b = _b ?? new Float4OutputChannel(3, "B");
-            _a = _a ?? new Float4OutputChannel(4, "A");
+            _a = _a ?? new Float4OutputChannel(1, "A");
+            _r = _r ?? new Float4OutputChannel(2, "R");
+            _g = _g ?? new Float4OutputChannel(3, "G");
+            _b = _b ?? new Float4OutputChannel(4, "B");
         }
 
         protected override ShaderProperty NewPropertyInstance ()
@@ -118,10 +118,10 @@ namespace StrumpyShaderEditor
             {
                 default:
                 case 0: return UniqueNodeIdentifier;
-                case 1: return String.Format("float4({0}.r,0,0,0)", UniqueNodeIdentifier);
-                case 2: return String.Format("float4(0,{0}.g,0,0)", UniqueNodeIdentifier);
-                case 3: return String.Format("float4(0,0,{0}.b,0)", UniqueNodeIdentifier);
-                case 4: return String.Format("float4(0,0,0,{0}.a)", UniqueNodeIdentifier);
+                case 1: return String.Format("float4(0,0,0,{0}.a)", UniqueNodeIdentifier);
+                case 2: return String.Format("float4({0}.r,0,0,0)", UniqueNodeIdentifier);
+                case 3: return String.Format("float4(0,{0}.g,0,0)", UniqueNodeIdentifier);
+                case 4: return String.Format("float4(0,0,{0}.b,0)", UniqueNodeIdentifier);
             }
         }
 		
