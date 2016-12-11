@@ -37,14 +37,14 @@ namespace StrumpyShaderEditor
                     case ShaderType.Standard:
                         path += "ShaderTemplate.template";
                         break;
-#if UNITY_5_3_OR_NEWER
-                    case ShaderType.PBR:
-                        path += "ShaderTemplatePBR.template";
-                        break;
-                    case ShaderType.PBR_Specular:
-                        path += "ShaderTemplatePBR.template";
-                        break;
-#endif
+					#if UNITY_5_3_OR_NEWER
+                    	case ShaderType.PBR:
+                        	path += "ShaderTemplatePBR.template";
+                        	break;
+                    	case ShaderType.PBR_Specular:
+                        	path += "ShaderTemplatePBR.template";
+                        	break;
+					#endif
                 }
                 return path;
             }
@@ -57,6 +57,7 @@ namespace StrumpyShaderEditor
 		
 		private Node _selectedNode;
 		private Node NextSelectedNode;
+
 		
 		private GraphHistory _undoChain;
 		
@@ -66,7 +67,7 @@ namespace StrumpyShaderEditor
 		
 		private bool _shouldOpenPreviewWindow = false;
 		
-		protected NodeEditor( )
+		protected NodeEditor()
 		{
 			_shaderEditorResourceDir = Application.dataPath
 												+ Path.DirectorySeparatorChar
@@ -185,7 +186,7 @@ namespace StrumpyShaderEditor
 		
 		private static bool PreviewSupported()
 		{
-			return SystemInfo.supportsRenderTextures && SystemInfo.SupportsRenderTextureFormat( RenderTextureFormat.ARGB32 );
+			return SystemInfo.SupportsRenderTextureFormat( RenderTextureFormat.ARGB32 );
 		}
 
 		private void DisablePreview()
@@ -234,7 +235,7 @@ namespace StrumpyShaderEditor
 					}
 				}
 			}
-			
+
 			//Update preview
 			if (_shouldUpdateShader)
 			{
@@ -253,9 +254,11 @@ namespace StrumpyShaderEditor
 					InstructionCounter.CountInstructions(); // Update the instruction count
 					CacheCount(); // Solve the tooltip (Cached)
 				}
-				else
-				{
-					EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, there are errors in the graph", "Ok");
+				else {
+
+					EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, Fix shader and try again", "Ok");
+					_previewWindow.Close();
+					_previewWindow = null;
 				}
 				_shouldUpdateShader = false;
 			}
@@ -489,7 +492,7 @@ namespace StrumpyShaderEditor
 			if (!_isInstructionCountCached) 
 				CacheCount();
 			GUI.Label(new Rect(5,0,95,45),new GUIContent(_instructionCountDetails,_instructionCountTooltip));
-			
+
 			_reservedArea.Clear();
 			_drawArea = new Rect( 0, 0, Screen.width-300, Screen.height-23 );
 			_detailsBox = new Rect(Screen.width - 300,0, 300, Screen.height - 40);
@@ -749,7 +752,6 @@ namespace StrumpyShaderEditor
 			var graphs  = PreviewSupported() ? 
 			GUI.skin.buttonMid() : //GUI.skin.FindStyle("ButtonMid") :
 			GUI.skin.buttonRight();//GUI.skin.FindStyle("ButtonRight");
-			GUI.skin.buttonRight();
 			
 			var selectedOption = OptionsSelection.None;
 			
@@ -1376,7 +1378,8 @@ namespace StrumpyShaderEditor
 		private void DrawIOLines( Rect viewArea )
 		{
 			Handles.BeginGUI( );
-			Handles.color = Color.black;
+			Handles.color = new Color(1.0f,1.0f,1.0f,0.2f);
+			const float THICKNESS = 5f;
 
 			_bezierTexture =_bezierTexture ?? Resources.Load("Internal/1x2AA", typeof(Texture2D)) as Texture2D;
 			
@@ -1408,12 +1411,12 @@ namespace StrumpyShaderEditor
 						var distanceBetweenNodes = Mathf.Abs(startPos.x - endPos.x);
 
 						Handles.DrawBezier(new Vector3(startPos.x, startPos.y),
-											new Vector3(endPos.x, endPos.y),
-											new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
-											new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
-											Color.black,
-											_bezierTexture,
-											1.25f);
+							new Vector3(endPos.x, endPos.y),
+							new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
+							new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
+							Handles.color,
+							_bezierTexture,
+							THICKNESS);
 					}
 				}
 			}
@@ -1441,6 +1444,7 @@ namespace StrumpyShaderEditor
 					startPos = mouseDrawPos;
 					endPos = start; 
 				}
+
 				
 				var distanceBetweenNodes = Mathf.Abs(startPos.x - endPos.x);
 
@@ -1449,9 +1453,9 @@ namespace StrumpyShaderEditor
 					new Vector3(endPos.x, endPos.y),
 					new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
 					new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
-					Color.black,
+					Handles.color,
 					_bezierTexture,
-					1.25f);
+					THICKNESS);
 			}
 			Handles.EndGUI();
 		}

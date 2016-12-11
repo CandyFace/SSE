@@ -113,7 +113,8 @@ namespace StrumpyShaderEditor
 				GUILayout.BeginHorizontal();
 				_newInputName = GUILayout.TextField( _newInputName, GUILayout.Width( 200 ) );
 				GUILayout.FlexibleSpace();
-				if( GUILayout.Button( "Add", GUILayout.Width( 75 ) ) )
+				Event e = Event.current;
+				if( GUILayout.Button( "Add", GUILayout.Width( 75 )) || e.isKey && e.keyCode == KeyCode.Return )
 				{
 					if( !string.IsNullOrEmpty( _newInputName ) )
 					{

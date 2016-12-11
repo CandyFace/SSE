@@ -33,6 +33,7 @@ namespace StrumpyShaderEditor
             _parent = parent;
             _parent.UpdateShader();
 
+
             if (_initialized)
                 return;
 
@@ -171,22 +172,24 @@ namespace StrumpyShaderEditor
                     GUI.Box(drawPos, _previewTextureContent);
                 }
 
-            if (_parent.ShaderNeedsUpdate())
+            if (_parent.ShaderNeedsUpdate() && _autoUpdate)
             {
+                 _parent.UpdateShader();
                 GUILayout.BeginArea(new Rect(0, 0, (int)position.width, (int)position.height - 40));
                 GUILayout.BeginHorizontal();
+                GUI.Box(new Rect(0,0, position.width, 30), "", GUI.skin.box);
                 var oColor = GUI.color; // Cache old content color
-                GUI.color = Color.red; // Make the warning red
+                GUI.color = Color.white;
                 var oldFontSize = GUI.skin.label.fontSize;
                 GUI.skin.label.fontSize = 20;
-                GUILayout.FlexibleSpace(); // Flexible space (ensures buttohns don't move)
-                GUILayout.Label("Shader Needs Updating"); // Draw the warning
+                GUILayout.FlexibleSpace(); // Flexible space (ensures buttons don't move)
+                GUILayout.Label("Shader Updating"); // Draw the warning
                 GUILayout.FlexibleSpace();
                 GUI.skin.label.fontSize = oldFontSize;
                 GUILayout.EndHorizontal();
                 GUILayout.EndArea();
                 GUI.color = oColor; // Revert the color
-            }
+            } 
 
             int dragControl = GUIUtility.GetControlID(_hotControlHash, FocusType.Passive);
             switch (Event.current.type)
@@ -195,6 +198,14 @@ namespace StrumpyShaderEditor
                     if (drawPos.Contains(Event.current.mousePosition))
                     {
                         GUIUtility.hotControl = dragControl;
+                        if(_rotate) {
+                            _tempStopRot = true;
+                                float oldRotationVal;
+                                oldRotationVal = _cameraRotation.x;
+                                _cameraRotation.x = oldRotationVal;
+                                _cameraRotation.y = 0;
+                            
+                        }
                     }
                     break;
                 case EventType.MouseDrag:
@@ -207,6 +218,12 @@ namespace StrumpyShaderEditor
                     if (GUIUtility.hotControl == dragControl)
                     {
                         GUIUtility.hotControl = 0;
+
+                        if(_tempStopRot == true) {
+                            _tempStopRot = false;
+                            _rotate = true;
+                        }
+
                     }
                     break;
             }
@@ -215,15 +232,20 @@ namespace StrumpyShaderEditor
             _previewMesh = (Mesh)EditorGUILayout.ObjectField("Mesh:", _previewMesh, typeof(Mesh), true);
 
             GUILayout.BeginHorizontal();
-            _drawBackground = EditorExtensions.ToggleButton(_drawBackground, "Draw Background");
-            if (GUILayout.Button("Update Preview"))
+            _drawBackground = EditorExtensions.ToggleButton(_drawBackground, "Background");
+            if (GUILayout.Button("Update"))
             {
                 _parent.UpdateShader();
             }
+            _autoUpdate = EditorExtensions.ToggleButton(_autoUpdate, "Auto");
+            _rotate = EditorExtensions.ToggleButton(_rotate, "Rotate");
             GUILayout.EndHorizontal();
         }
 
         private bool _drawBackground;
+        private bool _autoUpdate;
+        private bool _rotate;
+        private bool _tempStopRot;
         private DateTime _lastRenderTime = DateTime.Now;
 
         public void Update()
@@ -233,13 +255,18 @@ namespace StrumpyShaderEditor
 
             Bounds bounds = _previewMesh ? _previewMesh.bounds : new Bounds(Vector3.zero, Vector3.one);
             float magnitude = bounds.extents.magnitude;
-            float distance = magnitude * 3.5f;
+            float distance = magnitude * 2.5f;
 
             _previewCamera.DrawMeshOnly();
 
             //Set up the camera location...
             _cameraRotation.y = ClampAngle(_cameraRotation.y);
             _cameraRotation.x = ClampAngle(_cameraRotation.x);
+
+            if (_rotate && !_tempStopRot)
+            {
+                 _cameraRotation.x += 0.5f;
+            }
 
             _previewCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, 0.0f, 0f) * Quaternion.Euler(0.0f, _cameraRotation.x, 0.0f);
             _previewCamera.transform.position = _previewCamera.transform.rotation * new Vector3(0.0f, 0.0f, -distance);

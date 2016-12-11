@@ -64,7 +64,7 @@ namespace StrumpyShaderEditor
 
         public void Initialize()
 		{
-			_shaderName = _shaderName ?? "";
+			_shaderName = _shaderName ?? "MyShader";
 			_shaderFallback = _shaderFallback ?? "Diffuse";
 			
 			//Fog settings
