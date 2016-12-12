@@ -281,7 +281,7 @@ namespace StrumpyShaderEditor
 						var height = GUI.skin.box.CalcHeight (content, wMax);
 						GUI.Box (new Rect (drawPosOffset.x, drawPosOffset.yMax + boxOffset, wMax, height), content);
 						boxOffset += height;
-						
+
 					}
 					break;
 				}
@@ -334,9 +334,9 @@ namespace StrumpyShaderEditor
 				
 				var absoluteIODrawPos =
 					new Rect( 
-						currentDrawPosition.x- ( nodeIoSize.x * 1.85f), 
+						currentDrawPosition.x- ( nodeIoSize.x * 1.10f), 
 						currentDrawPosition.y , 
-						nodeIoSize.x+16, 
+						nodeIoSize.x+2, 
 						nodeIoSize.y+5 );
 				GUI.Box( absoluteIOVisualPos, "", GUI.skin.box);
 				if ( GUI.Button( absoluteIODrawPos, "", GUIStyle.none) ) 
@@ -371,9 +371,9 @@ namespace StrumpyShaderEditor
 					
 					var absoluteIODrawPos =
 						new Rect( 
-							drawPosOffset.xMax- ( nodeIoSize.x * 1.35f), 
+							drawPosOffset.xMax- ( nodeIoSize.x * 0.050f), 
 							currentDrawPosition.y, 
-							nodeIoSize.x+53, 
+							nodeIoSize.x+4, 
 							nodeIoSize.y+6 );
 					GUI.Box( absoluteIOVisualPos, "", GUI.skin.box);
 					if ( GUI.Button( absoluteIODrawPos, "" , GUIStyle.none) ) 

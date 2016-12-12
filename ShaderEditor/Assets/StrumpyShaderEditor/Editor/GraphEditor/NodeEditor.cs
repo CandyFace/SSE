@@ -183,6 +183,12 @@ namespace StrumpyShaderEditor
 		private bool _quickExport;
 		private string _lastExportPath;
 		private string _overrideLoadPath;
+
+		private bool _isBroken;
+
+		public bool isShaderBroken {
+			get { return this._isBroken;}  set { this.isShaderBroken = value;}
+		}
 		
 		private static bool PreviewSupported()
 		{
@@ -241,6 +247,7 @@ namespace StrumpyShaderEditor
 			{
 				if (_selectedGraph.IsGraphValid())
 				{
+					_isBroken = false;
 					File.WriteAllText(_tempShaderPathFull, _selectedGraph.GetShader(_shaderTemplatePath, true));
 					var currentShader = Resources.Load(_internalTempUnityPath + TempShaderName) as Shader;
 					var path = AssetDatabase.GetAssetPath(currentShader);
@@ -249,16 +256,13 @@ namespace StrumpyShaderEditor
 					if( _previewWindow != null )
 						_previewWindow.PreviewMaterial = new Material(currentShader);
 					
-					
 					_graphNeedsUpdate = false;
 					InstructionCounter.CountInstructions(); // Update the instruction count
 					CacheCount(); // Solve the tooltip (Cached)
 				}
 				else {
-
-					EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, Fix shader and try again", "Ok");
-					_previewWindow.Close();
-					_previewWindow = null;
+					_isBroken = true;
+					//EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, Fix shader and try again", "Ok");
 				}
 				_shouldUpdateShader = false;
 			}
@@ -1078,57 +1082,12 @@ namespace StrumpyShaderEditor
 				  new GUIContent(SelectedSettings.Settings.ToString(),"Settings for the shader itself"),
 				  new GUIContent(SelectedSettings.Nodes.ToString(),"Searchable, tooltipped list of nodes.") };
 			
-			// Texel fun time
-			/*if (_selectedGraph.IsGraphValid()) {
-			
-			currentSettings = (SelectedSettings)GUILayout.Toolbar( (int)currentSettings, 
-			                                                    new [] { 	SelectedSettings.Node.ToString(),
-																			SelectedSettings.Inputs.ToString(), 
-																			SelectedSettings.Settings.ToString(),
-																			SelectedSettings.Nodes.ToString() } );
-			} else */ { // Settings are not valid, time to draw a custom view
-				// Custom style time!
-				/* // Too Small
-				var node = new GUIStyle(GUI.skin.FindStyle("minibuttonleft"));
-				var inputs  = new GUIStyle(GUI.skin.FindStyle("minibuttonmid"));
-				var settings  = new GUIStyle(GUI.skin.FindStyle("minibuttonmid"));
-				var nodes =  new GUIStyle(GUI.skin.FindStyle("minibuttonright")); */
-				
-				/* // Too Big
-				var node = GUI.skin.FindStyle("LargeButtonLeft");
-				var inputs  = GUI.skin.FindStyle("LargeButtonMid");
-				var settings  = GUI.skin.FindStyle("LargeButtonMid");
-				var nodes= GUI.skin.FindStyle("LargeButtonRight");
-				*/
+			{ 
 				var node = GUI.skin.buttonLeft();//new GUIStyle(GUI.skin.FindStyle("ButtonLeft"));
 				var inputs  = GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonMid"));
 				var settings  = GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonMid"));
 				var nodes =  GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonRight"));
 				
-				
-				// Reflect active button settings (since we will emulate using Button)
-				/*switch (currentSettings) {
-					case SelectedSettings.Node:
-						node.normal = node.onNormal;
-						node.hover = node.onHover;
-						node.active = node.onActive;
-						break;
-					case SelectedSettings.Inputs:
-						inputs.normal = inputs.onNormal;
-						inputs.hover = inputs.onHover;
-						inputs.active = inputs.onActive;
-						break;
-					case SelectedSettings.Settings:
-						settings.normal = settings.onNormal;
-						settings.hover = settings.onHover;
-						settings.active = settings.onActive;
-						break;
-					case SelectedSettings.Nodes:
-						nodes.normal = nodes.onNormal;
-						nodes.hover = nodes.onHover;
-						nodes.active = nodes.onActive;
-						break;
-				}*/
 				
 				switch (_currentSettings) {
 					case SelectedSettings.Node:
@@ -1410,8 +1369,8 @@ namespace StrumpyShaderEditor
 						
 						var distanceBetweenNodes = Mathf.Abs(startPos.x - endPos.x);
 
-						Handles.DrawBezier(new Vector3(startPos.x, startPos.y),
-							new Vector3(endPos.x, endPos.y),
+						Handles.DrawBezier(new Vector3(startPos.x+5, startPos.y),
+							new Vector3(endPos.x-5, endPos.y),
 							new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
 							new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
 							Handles.color,
@@ -1428,12 +1387,12 @@ namespace StrumpyShaderEditor
 				if (SelectedInputChannel != null)
 				{
 					var channelPosition = NodeDrawer.GetAbsoluteInputChannelPosition(_selectedGraph.CurrentSubGraph.GetNode(SelectedInputChannel.NodeIdentifier), SelectedInputChannel.ChannelId);
-					start = new Vector3(channelPosition.x, channelPosition.y, 0f);
+					start = new Vector3(channelPosition.x+5, channelPosition.y, 0f);
 				}
 				else
 				{
 					var channelPosition = NodeDrawer.GetAbsoluteOutputChannelPosition(_selectedGraph.CurrentSubGraph.GetNode(SelectedOutputChannel.NodeIdentifier), SelectedOutputChannel.ChannelId);
-					start = new Vector3(channelPosition.x, channelPosition.y, 0f);
+					start = new Vector3(channelPosition.x-5, channelPosition.y, 0f);
 				}
 				var mouseDrawPos = _currentMousePosition + new Vector3(_editorFieldOffset.x, _editorFieldOffset.y, 0f);
 				

@@ -171,8 +171,8 @@ namespace StrumpyShaderEditor
                 {
                     GUI.Box(drawPos, _previewTextureContent);
                 }
-
-            if (_parent.ShaderNeedsUpdate() && _autoUpdate)
+            
+            if (_parent.ShaderNeedsUpdate() && _autoUpdate && !_parent.isShaderBroken)
             {
                  _parent.UpdateShader();
                 GUILayout.BeginArea(new Rect(0, 0, (int)position.width, (int)position.height - 40));
@@ -189,7 +189,11 @@ namespace StrumpyShaderEditor
                 GUILayout.EndHorizontal();
                 GUILayout.EndArea();
                 GUI.color = oColor; // Revert the color
-            } 
+            }
+
+            if (_parent.isShaderBroken) {
+                _parent.UpdateShader();
+            }
 
             int dragControl = GUIUtility.GetControlID(_hotControlHash, FocusType.Passive);
             switch (Event.current.type)
