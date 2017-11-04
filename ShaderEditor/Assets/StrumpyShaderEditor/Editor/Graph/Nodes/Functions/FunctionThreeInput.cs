@@ -14,9 +14,10 @@ namespace StrumpyShaderEditor
 	    protected FunctionThreeInput()
 	    {
 			Initialize();
-		}
-		
-		public override sealed void Initialize ()
+            OnInitialized();
+        }
+
+        public override sealed void Initialize ()
 		{
 			_result = _result ?? new Float4OutputChannel( 0, "Result" );
 			_arg1 = _arg1 ?? new Float4InputChannel( 0, "Arg1", Vector4.zero );
@@ -28,9 +29,12 @@ namespace StrumpyShaderEditor
 		{
 			get;
 		}
-		
-		
-		public string GetFunctionDefinition()
+
+        protected virtual void OnInitialized()
+        {
+        }
+
+        public string GetFunctionDefinition()
 		{
 			return "";
 		}

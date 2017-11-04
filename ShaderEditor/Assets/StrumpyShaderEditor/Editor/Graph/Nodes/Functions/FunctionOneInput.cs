@@ -12,7 +12,8 @@ namespace StrumpyShaderEditor
 		protected FunctionOneInput()
 		{
 			Initialize();
-		}
+            OnInitialized();
+        }
 		
 		public override sealed void Initialize ()
 		{
@@ -24,9 +25,12 @@ namespace StrumpyShaderEditor
 		{
 			get;
 		}
-		
-		
-		public string GetFunctionDefinition()
+
+        protected virtual void OnInitialized()
+        {
+        }
+
+        public string GetFunctionDefinition()
 		{
 			return "";
 		}

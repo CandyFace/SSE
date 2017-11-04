@@ -22,7 +22,7 @@ namespace StrumpyShaderEditor
 		private EditorString Comment {
 			get { return _comment ?? (_comment = ""); }
 		}
-		
+
 		public Rect NodePositionInGraph
 		{
 			get{
@@ -281,6 +281,7 @@ namespace StrumpyShaderEditor
 						var height = GUI.skin.box.CalcHeight (content, wMax);
 						GUI.Box (new Rect (drawPosOffset.x, drawPosOffset.yMax + boxOffset, wMax, height), content);
 						boxOffset += height;
+
 					}
 					break;
 				}
@@ -306,8 +307,10 @@ namespace StrumpyShaderEditor
 			
 			//Do custom layout to stop unity throwing errors for some strange reason
 			// Texel - Seperated draw size from actual size, using blank style for real buttons
+			// CandyFace - Left side IO
 			var nodeIoSize = new Vector2( 15f, nodeDrawHeightPerChannel * (2f / 3f) );
-			var nodeIoDrawSize = new Vector2( 7f, 7f );
+			var nodeIoDrawSize = new Vector2( 15f, 15f );
+			GUI.backgroundColor = Color.white;
 			
 			var currentDrawPosition = new Vector2( drawPosOffset.x, drawPosOffset.y );
 			currentDrawPosition.y += headerHeight;
@@ -319,22 +322,22 @@ namespace StrumpyShaderEditor
 			GUI.skin.label.alignment = TextAnchor.UpperLeft;
 			GUI.skin.label.clipping = TextClipping.Overflow;
 			GUI.skin.label.wordWrap = false;
+
 			foreach (var channel in GetOutputChannels ())
 			{
 				var absoluteIOVisualPos = 
 					new Rect( 
-						currentDrawPosition.x- ( nodeIoDrawSize.x * 0.5f), 
-						currentDrawPosition.y + nodeIoDrawSize.y/2 + 2, 
+						currentDrawPosition.x- ( nodeIoDrawSize.x * 0.950f), 
+						currentDrawPosition.y-8 + nodeIoDrawSize.y/2 + 2, 
 						nodeIoDrawSize.x, 
 						nodeIoDrawSize.y );
 				
 				var absoluteIODrawPos =
 					new Rect( 
-						currentDrawPosition.x- ( nodeIoSize.x * 0.5f), 
-						currentDrawPosition.y + 2, 
-						nodeIoSize.x, 
-						nodeIoSize.y );
-				
+						currentDrawPosition.x- ( nodeIoSize.x * 1.10f), 
+						currentDrawPosition.y , 
+						nodeIoSize.x+2, 
+						nodeIoSize.y+5 );
 				GUI.Box( absoluteIOVisualPos, "", GUI.skin.box);
 				if ( GUI.Button( absoluteIODrawPos, "", GUIStyle.none) ) 
 				{
@@ -350,7 +353,7 @@ namespace StrumpyShaderEditor
 				currentDrawPosition.y += nodeDrawHeightPerChannel;
 			}
 			
-			//Do the other side now...
+			//Right side graph IO
 			currentDrawPosition = new Vector2( drawPosOffset.x + (drawPosOffset.width / 2f), drawPosOffset.y );
 			currentDrawPosition.y += headerHeight;
 			
@@ -359,39 +362,43 @@ namespace StrumpyShaderEditor
 			GUI.skin.label.wordWrap = false;
 			foreach (var channel in GetInputChannels ())
 			{
-				var absoluteIOVisualPos = 
-					new Rect( 
-						drawPosOffset.xMax- ( nodeIoSize.x * 0.5f) + 3, 
-						currentDrawPosition.y + nodeIoDrawSize.y/2 + 2, 
-						nodeIoDrawSize.x, 
-						nodeIoDrawSize.y );
+					var absoluteIOVisualPos = 
+						new Rect( 
+							drawPosOffset.xMax- ( nodeIoSize.x * 0.2f) + 3, 
+							currentDrawPosition.y-8 + nodeIoDrawSize.y/2 + 2, 
+							nodeIoDrawSize.x, 
+							nodeIoDrawSize.y );
+					
+					var absoluteIODrawPos =
+						new Rect( 
+							drawPosOffset.xMax- ( nodeIoSize.x * 0.050f), 
+							currentDrawPosition.y, 
+							nodeIoSize.x+4, 
+							nodeIoSize.y+6 );
+					GUI.Box( absoluteIOVisualPos, "", GUI.skin.box);
+					if ( GUI.Button( absoluteIODrawPos, "" , GUIStyle.none) ) 
+					{
+						editor.SelectedInputChannel = new InputChannelReference( UniqueNodeIdentifier, channel.ChannelId);
+					}
+					var relativeIODrawPos = absoluteIODrawPos;
+					relativeIODrawPos.x -= drawPosOffset.x;
+					relativeIODrawPos.y -= drawPosOffset.y;
+					channel.Position = relativeIODrawPos;
+					
+					var labelDrawPos = new Rect( currentDrawPosition.x, currentDrawPosition.y, (drawPosOffset.width / 2f) - ( nodeIoSize.x * 0.5f), nodeDrawHeightPerChannel );
+					GUI.Label(labelDrawPos, channel.DisplayName);
+					currentDrawPosition.y += nodeDrawHeightPerChannel;
 				
-				var absoluteIODrawPos =
-					new Rect( 
-						drawPosOffset.xMax- ( nodeIoSize.x * 0.5f), 
-						currentDrawPosition.y + 2, 
-						nodeIoSize.x, 
-						nodeIoSize.y );
-				
-				GUI.Box( absoluteIOVisualPos, "", GUI.skin.box);
-				if ( GUI.Button( absoluteIODrawPos, "" , GUIStyle.none) ) 
-				{
-					editor.SelectedInputChannel = new InputChannelReference( UniqueNodeIdentifier, channel.ChannelId );
-				}
-				var relativeIODrawPos = absoluteIODrawPos;
-				relativeIODrawPos.x -= drawPosOffset.x;
-				relativeIODrawPos.y -= drawPosOffset.y;
-				channel.Position = relativeIODrawPos;
-				
-				var labelDrawPos = new Rect( currentDrawPosition.x, currentDrawPosition.y, (drawPosOffset.width / 2f) - ( nodeIoSize.x * 0.5f), nodeDrawHeightPerChannel );
-				GUI.Label(labelDrawPos, channel.DisplayName);
-				currentDrawPosition.y += nodeDrawHeightPerChannel;
 			}
 			
 			GUI.color = Color.white;
 			GUI.skin.label.alignment = oldTextAnchor;
 			GUI.skin.label.clipping = oldTextClipping;
 			GUI.skin.label.wordWrap = oldWordWrap;
+
+
+			//TODO: Preview shader at node
+			//GUI.Box(new Rect(currentDrawPosition.x-50, currentDrawPosition.y, nodeDrawWidth,100), "", GUI.skin.box);
 			
 			if ( showComments && Comment != "") {
 				// Texel - Comment Field
@@ -402,10 +409,8 @@ namespace StrumpyShaderEditor
 				GUI.skin.box.alignment = TextAnchor.UpperLeft;
 				var oldState = GUI.skin.box.normal;
 				
-				// Draw the text opaque
-				var textColor = GUI.skin.box.normal.textColor;
-				textColor.a = 1f;
-				GUI.skin.box.normal.textColor = textColor;
+				// Draw the text
+				GUI.skin.box.normal.textColor = Color.white;
 				
 				//var oldWrap = GUI.skin.box.wordWrap;
 				GUI.skin.box.wordWrap = true;
@@ -423,7 +428,7 @@ namespace StrumpyShaderEditor
 				
 				GUI.skin.box.alignment = oldAnchor;
 				GUI.skin.box.normal = oldState;
-				GUI.skin.box.normal.textColor = textColor;
+				GUI.skin.box.normal.textColor = Color.white;
 				GUI.color = oldColor;
 			}
 			

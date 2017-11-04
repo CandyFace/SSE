@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System;
@@ -26,7 +26,29 @@ namespace StrumpyShaderEditor
 		private readonly string _internalTempDir;
 		private readonly string _internalTempUnityPath;
 		private readonly string _tempShaderPathFull;
-		private readonly string _shaderTemplatePath;
+		private string _shaderTemplatePath
+        {
+            get
+            {
+                var path = _shaderEditorResourceDir + "Internal" + Path.DirectorySeparatorChar;
+                switch (CurrentGraph.ShaderSettings.ShaderType)
+                {
+                    default:
+                    case ShaderType.Standard:
+                        path += "ShaderTemplate.template";
+                        break;
+					#if UNITY_5_3_OR_NEWER
+                    	case ShaderType.PBR:
+                        	path += "ShaderTemplatePBR.template";
+                        	break;
+                    	case ShaderType.PBR_Specular:
+                        	path += "ShaderTemplatePBR.template";
+                        	break;
+					#endif
+                }
+                return path;
+            }
+        }
 		private readonly string _graphsDir;
 
 		private readonly PopupMenu _popupMenu;
@@ -35,6 +57,7 @@ namespace StrumpyShaderEditor
 		
 		private Node _selectedNode;
 		private Node NextSelectedNode;
+
 		
 		private GraphHistory _undoChain;
 		
@@ -42,9 +65,9 @@ namespace StrumpyShaderEditor
 		
 		private PreviewWindowInternal _previewWindow;
 		
-		private bool _shouldOpenPreviewWindow = true;
+		private bool _shouldOpenPreviewWindow = false;
 		
-		protected NodeEditor( )
+		protected NodeEditor()
 		{
 			_shaderEditorResourceDir = Application.dataPath
 												+ Path.DirectorySeparatorChar
@@ -65,10 +88,6 @@ namespace StrumpyShaderEditor
 			_tempShaderPathFull = _shaderEditorResourceDir
 								+ _internalTempDir
 								+ TempShaderName + ".shader";
-			_shaderTemplatePath = _shaderEditorResourceDir
-								+ "Internal"
-								+ Path.DirectorySeparatorChar
-								+ "ShaderTemplate.template";
 			_graphsDir = _shaderEditorResourceDir
 								+ "Public"
 								+ Path.DirectorySeparatorChar
@@ -113,13 +132,12 @@ namespace StrumpyShaderEditor
 					}
 				}
 			}
-			
-			//Finally load the last graph
-			LoadLastGraph();
-			_selectedGraph.Initialize( new Rect( 0,0, Screen.width, Screen.height ), true );
-			_undoChain = new GraphHistory( _serializableTypes );
-			
-			_shouldOpenPreviewWindow = true;
+
+            //Finally load the last graph
+            LoadLastGraph();
+            _selectedGraph.Initialize(new Rect(0, 0, Screen.width, Screen.height), true);
+            _undoChain = new GraphHistory( _serializableTypes );
+			//_shouldOpenPreviewWindow = true;
 		}
 		
 		public void OnLostFocus()
@@ -165,10 +183,16 @@ namespace StrumpyShaderEditor
 		private bool _quickExport;
 		private string _lastExportPath;
 		private string _overrideLoadPath;
+
+		private bool _isBroken;
+
+		public bool isShaderBroken {
+			get { return this._isBroken;}  set { this.isShaderBroken = value;}
+		}
 		
 		private static bool PreviewSupported()
 		{
-			return SystemInfo.supportsRenderTextures && SystemInfo.SupportsRenderTextureFormat( RenderTextureFormat.ARGB32 );
+			return SystemInfo.SupportsRenderTextureFormat( RenderTextureFormat.ARGB32 );
 		}
 
 		private void DisablePreview()
@@ -217,12 +241,13 @@ namespace StrumpyShaderEditor
 					}
 				}
 			}
-			
+
 			//Update preview
 			if (_shouldUpdateShader)
 			{
 				if (_selectedGraph.IsGraphValid())
 				{
+					_isBroken = false;
 					File.WriteAllText(_tempShaderPathFull, _selectedGraph.GetShader(_shaderTemplatePath, true));
 					var currentShader = Resources.Load(_internalTempUnityPath + TempShaderName) as Shader;
 					var path = AssetDatabase.GetAssetPath(currentShader);
@@ -231,14 +256,13 @@ namespace StrumpyShaderEditor
 					if( _previewWindow != null )
 						_previewWindow.PreviewMaterial = new Material(currentShader);
 					
-					
 					_graphNeedsUpdate = false;
 					InstructionCounter.CountInstructions(); // Update the instruction count
 					CacheCount(); // Solve the tooltip (Cached)
 				}
-				else
-				{
-					EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, there are errors in the graph", "Ok");
+				else {
+					_isBroken = true;
+					//EditorUtility.DisplayDialog("Save Shader Error", "Cannot update shader, Fix shader and try again", "Ok");
 				}
 				_shouldUpdateShader = false;
 			}
@@ -398,32 +422,33 @@ namespace StrumpyShaderEditor
 		private void LoadLastGraph()
 		{
 			var fi = new FileInfo(_autosavePath);
-			if (fi.Exists)
-			{
-				try{
-					var fs = fi.OpenRead();
-					var reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
-					var ser = new DataContractSerializer(typeof(AutoSaveGraph), _serializableTypes, int.MaxValue, false, false, null);
-					var loaded = ser.ReadObject(reader, true) as AutoSaveGraph;
-					if (loaded != null)
-					{
-						_nextGraph = loaded.Graph;
-						if( !string.IsNullOrEmpty( loaded.ExportPath ) && File.Exists( loaded.ExportPath ) )
-							_lastExportPath = loaded.ExportPath;
-						if( !string.IsNullOrEmpty( loaded.SavePath ) && File.Exists( loaded.SavePath ) )
-							_lastGraphPath = loaded.SavePath;
-						_nextGraph.Initialize( new Rect( 0, 0, Screen.width, Screen.height ), true);
-						_markDirtyOnLoad = true;
-					}
-					reader.Close();
-					fs.Close();
-				}
-				catch( Exception e )
-				{
-					Debug.Log( e );
-					EditorUtility.DisplayDialog("Load Shader Error", "Could not load shader", "Ok");
-				}
-			}
+            if (fi.Exists)
+            {
+                try
+                {
+                    var fs = fi.OpenRead();
+                    var reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
+                    var ser = new DataContractSerializer(typeof(AutoSaveGraph), _serializableTypes, int.MaxValue, false, false, null);
+                    var loaded = ser.ReadObject(reader, true) as AutoSaveGraph;
+                    if (loaded != null)
+                    {
+                        _nextGraph = loaded.Graph;
+                        if (!string.IsNullOrEmpty(loaded.ExportPath) && File.Exists(loaded.ExportPath))
+                            _lastExportPath = loaded.ExportPath;
+                        if (!string.IsNullOrEmpty(loaded.SavePath) && File.Exists(loaded.SavePath))
+                            _lastGraphPath = loaded.SavePath;
+                        _nextGraph.Initialize(new Rect(0, 0, Screen.width, Screen.height), true);
+                        _markDirtyOnLoad = true;
+                    }
+                    reader.Close();
+                    fs.Close();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
+                    EditorUtility.DisplayDialog("Load Shader Error", "Could not load shader", "Ok");
+                }
+            }
 		}
 		
 		//Build a list of how many instructions the last compiled shader uses.
@@ -471,7 +496,7 @@ namespace StrumpyShaderEditor
 			if (!_isInstructionCountCached) 
 				CacheCount();
 			GUI.Label(new Rect(5,0,95,45),new GUIContent(_instructionCountDetails,_instructionCountTooltip));
-			
+
 			_reservedArea.Clear();
 			_drawArea = new Rect( 0, 0, Screen.width-300, Screen.height-23 );
 			_detailsBox = new Rect(Screen.width - 300,0, 300, Screen.height - 40);
@@ -731,7 +756,6 @@ namespace StrumpyShaderEditor
 			var graphs  = PreviewSupported() ? 
 			GUI.skin.buttonMid() : //GUI.skin.FindStyle("ButtonMid") :
 			GUI.skin.buttonRight();//GUI.skin.FindStyle("ButtonRight");
-			GUI.skin.buttonRight();
 			
 			var selectedOption = OptionsSelection.None;
 			
@@ -1058,57 +1082,12 @@ namespace StrumpyShaderEditor
 				  new GUIContent(SelectedSettings.Settings.ToString(),"Settings for the shader itself"),
 				  new GUIContent(SelectedSettings.Nodes.ToString(),"Searchable, tooltipped list of nodes.") };
 			
-			// Texel fun time
-			/*if (_selectedGraph.IsGraphValid()) {
-			
-			currentSettings = (SelectedSettings)GUILayout.Toolbar( (int)currentSettings, 
-			                                                    new [] { 	SelectedSettings.Node.ToString(),
-																			SelectedSettings.Inputs.ToString(), 
-																			SelectedSettings.Settings.ToString(),
-																			SelectedSettings.Nodes.ToString() } );
-			} else */ { // Settings are not valid, time to draw a custom view
-				// Custom style time!
-				/* // Too Small
-				var node = new GUIStyle(GUI.skin.FindStyle("minibuttonleft"));
-				var inputs  = new GUIStyle(GUI.skin.FindStyle("minibuttonmid"));
-				var settings  = new GUIStyle(GUI.skin.FindStyle("minibuttonmid"));
-				var nodes =  new GUIStyle(GUI.skin.FindStyle("minibuttonright")); */
-				
-				/* // Too Big
-				var node = GUI.skin.FindStyle("LargeButtonLeft");
-				var inputs  = GUI.skin.FindStyle("LargeButtonMid");
-				var settings  = GUI.skin.FindStyle("LargeButtonMid");
-				var nodes= GUI.skin.FindStyle("LargeButtonRight");
-				*/
+			{ 
 				var node = GUI.skin.buttonLeft();//new GUIStyle(GUI.skin.FindStyle("ButtonLeft"));
 				var inputs  = GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonMid"));
 				var settings  = GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonMid"));
 				var nodes =  GUI.skin.buttonMid();//new GUIStyle(GUI.skin.FindStyle("ButtonRight"));
 				
-				
-				// Reflect active button settings (since we will emulate using Button)
-				/*switch (currentSettings) {
-					case SelectedSettings.Node:
-						node.normal = node.onNormal;
-						node.hover = node.onHover;
-						node.active = node.onActive;
-						break;
-					case SelectedSettings.Inputs:
-						inputs.normal = inputs.onNormal;
-						inputs.hover = inputs.onHover;
-						inputs.active = inputs.onActive;
-						break;
-					case SelectedSettings.Settings:
-						settings.normal = settings.onNormal;
-						settings.hover = settings.onHover;
-						settings.active = settings.onActive;
-						break;
-					case SelectedSettings.Nodes:
-						nodes.normal = nodes.onNormal;
-						nodes.hover = nodes.onHover;
-						nodes.active = nodes.onActive;
-						break;
-				}*/
 				
 				switch (_currentSettings) {
 					case SelectedSettings.Node:
@@ -1358,7 +1337,8 @@ namespace StrumpyShaderEditor
 		private void DrawIOLines( Rect viewArea )
 		{
 			Handles.BeginGUI( );
-			Handles.color = Color.black;
+			Handles.color = new Color(1.0f,1.0f,1.0f,0.2f);
+			const float THICKNESS = 5f;
 
 			_bezierTexture =_bezierTexture ?? Resources.Load("Internal/1x2AA", typeof(Texture2D)) as Texture2D;
 			
@@ -1389,13 +1369,13 @@ namespace StrumpyShaderEditor
 						
 						var distanceBetweenNodes = Mathf.Abs(startPos.x - endPos.x);
 
-						Handles.DrawBezier(new Vector3(startPos.x, startPos.y),
-											new Vector3(endPos.x, endPos.y),
-											new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
-											new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
-											Color.black,
-											_bezierTexture,
-											1.25f);
+						Handles.DrawBezier(new Vector3(startPos.x+5, startPos.y),
+							new Vector3(endPos.x-5, endPos.y),
+							new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
+							new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
+							Handles.color,
+							_bezierTexture,
+							THICKNESS);
 					}
 				}
 			}
@@ -1407,12 +1387,12 @@ namespace StrumpyShaderEditor
 				if (SelectedInputChannel != null)
 				{
 					var channelPosition = NodeDrawer.GetAbsoluteInputChannelPosition(_selectedGraph.CurrentSubGraph.GetNode(SelectedInputChannel.NodeIdentifier), SelectedInputChannel.ChannelId);
-					start = new Vector3(channelPosition.x, channelPosition.y, 0f);
+					start = new Vector3(channelPosition.x+5, channelPosition.y, 0f);
 				}
 				else
 				{
 					var channelPosition = NodeDrawer.GetAbsoluteOutputChannelPosition(_selectedGraph.CurrentSubGraph.GetNode(SelectedOutputChannel.NodeIdentifier), SelectedOutputChannel.ChannelId);
-					start = new Vector3(channelPosition.x, channelPosition.y, 0f);
+					start = new Vector3(channelPosition.x-5, channelPosition.y, 0f);
 				}
 				var mouseDrawPos = _currentMousePosition + new Vector3(_editorFieldOffset.x, _editorFieldOffset.y, 0f);
 				
@@ -1423,6 +1403,7 @@ namespace StrumpyShaderEditor
 					startPos = mouseDrawPos;
 					endPos = start; 
 				}
+
 				
 				var distanceBetweenNodes = Mathf.Abs(startPos.x - endPos.x);
 
@@ -1431,9 +1412,9 @@ namespace StrumpyShaderEditor
 					new Vector3(endPos.x, endPos.y),
 					new Vector3(startPos.x + distanceBetweenNodes / 3.0f, startPos.y),
 					new Vector3(endPos.x - distanceBetweenNodes / 3.0f, endPos.y),
-					Color.black,
+					Handles.color,
 					_bezierTexture,
-					1.25f);
+					THICKNESS);
 			}
 			Handles.EndGUI();
 		}
