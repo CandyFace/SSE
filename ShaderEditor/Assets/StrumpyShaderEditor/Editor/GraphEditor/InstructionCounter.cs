@@ -35,12 +35,12 @@ namespace StrumpyShaderEditor {
 			string tempDir = Path.Combine(Path.GetDirectoryName(assetsDir),"Temp");
 			
 			const string fileName = "CgBatchOutput.shader";
-			
-			string filePath = Path.Combine(tempDir,fileName);
-			
-			//Debug.Log(filePath);
-			
-			int GL_ALU = -1;
+
+            string filePath = Path.Combine(tempDir, fileName);
+            if (!File.Exists(filePath)) return;
+            //Debug.Log(filePath);
+
+            int GL_ALU = -1;
 			int GL_V_ALU = -1;
 			int GL_TEX = -1;
 			

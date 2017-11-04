@@ -16,5 +16,10 @@ namespace StrumpyShaderEditor
 		{
 			get{ return "acos"; }
 		}
-	}
+        protected override void OnInitialized()
+        {
+            _arg1.DisplayName = "Value";
+            base.OnInitialized();
+        }
+    }
 }
