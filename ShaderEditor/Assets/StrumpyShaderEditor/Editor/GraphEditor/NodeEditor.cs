@@ -1337,8 +1337,8 @@ namespace StrumpyShaderEditor
 		private void DrawIOLines( Rect viewArea )
 		{
 			Handles.BeginGUI( );
-			Handles.color = new Color(1.0f,1.0f,1.0f,0.2f);
-			const float THICKNESS = 5f;
+			Handles.color = new Color(0.0f,0.0f,0.0f,0.65f);
+			const float THICKNESS = 1f;
 
 			_bezierTexture =_bezierTexture ?? Resources.Load("Internal/1x2AA", typeof(Texture2D)) as Texture2D;
 			
