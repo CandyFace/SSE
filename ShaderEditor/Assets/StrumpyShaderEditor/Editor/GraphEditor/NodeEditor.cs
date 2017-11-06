@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System;
@@ -21,11 +21,11 @@ namespace StrumpyShaderEditor
 		
 		private readonly List<Type> _serializableTypes = new List<Type>();
 
-		private readonly string _shaderEditorResourceDir;
-		private readonly string _autosavePath;
-		private readonly string _internalTempDir;
-		private readonly string _internalTempUnityPath;
-		private readonly string _tempShaderPathFull;
+		private string _shaderEditorResourceDir;
+		private string _autosavePath;
+		private string _internalTempDir;
+		private string _internalTempUnityPath;
+		private string _tempShaderPathFull;
 		private string _shaderTemplatePath
         {
             get
@@ -49,9 +49,9 @@ namespace StrumpyShaderEditor
                 return path;
             }
         }
-		private readonly string _graphsDir;
+		private string _graphsDir;
 
-		private readonly PopupMenu _popupMenu;
+		private PopupMenu _popupMenu;
 
 		private const string TempShaderName = "TempShader";
 		
@@ -66,8 +66,13 @@ namespace StrumpyShaderEditor
 		private PreviewWindowInternal _previewWindow;
 		
 		private bool _shouldOpenPreviewWindow = false;
-		
+
 		protected NodeEditor()
+		{
+			
+		}
+
+		private void OnEnable()
 		{
 			_shaderEditorResourceDir = Application.dataPath
 												+ Path.DirectorySeparatorChar
@@ -1337,8 +1342,8 @@ namespace StrumpyShaderEditor
 		private void DrawIOLines( Rect viewArea )
 		{
 			Handles.BeginGUI( );
-			Handles.color = new Color(1.0f,1.0f,1.0f,0.2f);
-			const float THICKNESS = 5f;
+			Handles.color = new Color(0.0f,0.0f,0.0f,0.65f);
+			const float THICKNESS = 1f;
 
 			_bezierTexture =_bezierTexture ?? Resources.Load("Internal/1x2AA", typeof(Texture2D)) as Texture2D;
 			
